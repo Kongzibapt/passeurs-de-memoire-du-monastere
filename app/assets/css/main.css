@@ -1,0 +1,218 @@
+/* ---------------------------------------------------------------------------
+   Feuille maîtresse — Les Passeurs de Mémoire du Monastère
+   ---------------------------------------------------------------------------
+   Ordre des couches (déclaré ici, donc AVANT l'import de Tailwind, qui ne
+   déclare que `theme, base, components, utilities`) :
+
+     theme      → variables générées par @theme (Tailwind)
+     base       → preflight de Tailwind (reset)
+     components → composants Tailwind
+     design     → la charte graphique (tokens.css + base.css + site.css)
+     utilities  → les utilitaires Tailwind
+
+   La charte passe donc APRÈS le preflight — le rendu des pages publiques est
+   exactement celui de la maquette Claude Design — mais AVANT les utilitaires,
+   pour que le back-office /admin, écrit en Tailwind, puisse surcharger les
+   styles d'éléments (h1, p, a…) posés par base.css.
+--------------------------------------------------------------------------- */
+@layer theme, base, components, design, utilities;
+
+@import 'tailwindcss';
+
+/* Charte graphique — voir project/tokens/ et project/site/site.css dans le
+   bundle Claude Design. Reprises telles quelles, à l'enveloppe `@layer design`
+   près : toute mise à jour de la maquette se recopie sans réécriture. */
+@import './tokens.css';
+@import './base.css';
+@import './site.css';
+
+/* ---------------------------------------------------------------------------
+   Passerelle vers Tailwind
+   ---------------------------------------------------------------------------
+   `tokens.css` reste la source unique de vérité de la charte. Le bloc ci-dessous
+   redonne la même palette à Tailwind, pour que le back-office dispose des
+   utilitaires de marque (`bg-clay-600`, `text-slate-900`, `font-accent`…).
+   Les valeurs sont identiques : si la charte évolue, mettre à jour les deux.
+--------------------------------------------------------------------------- */
+@theme {
+  --font-display: 'Schibsted Grotesk', system-ui, -apple-system, sans-serif;
+  --font-body: 'Mulish', system-ui, -apple-system, sans-serif;
+  --font-accent: 'Newsreader', Georgia, 'Times New Roman', serif;
+
+  /* Terre cuite — couleur principale (le pont) */
+  --color-clay-50: #fbf1e6;
+  --color-clay-100: #f4dec6;
+  --color-clay-200: #eac4a0;
+  --color-clay-300: #e0a878;
+  --color-clay-400: #d49258;
+  --color-clay-500: #c77f4a;
+  --color-clay-600: #ac683a;
+  --color-clay-700: #8c5230;
+  --color-clay-800: #663c25;
+  --color-clay-900: #45291a;
+
+  /* Ardoise — le clocher, les toitures */
+  --color-slate-50: #ebeff1;
+  --color-slate-100: #d7dfe3;
+  --color-slate-200: #b7c4ca;
+  --color-slate-400: #6c8590;
+  --color-slate-600: #46606d;
+  --color-slate-700: #2e4450;
+  --color-slate-900: #1e2e36;
+
+  /* Rivière — l'Aveyron */
+  --color-river-100: #dce9ee;
+  --color-river-300: #9fbfcf;
+  --color-river-500: #5c8fa8;
+  --color-river-700: #3e687c;
+
+  /* Sauge — la végétation */
+  --color-sage-100: #e7e7d5;
+  --color-sage-300: #bfc09a;
+  --color-sage-500: #7e7e54;
+  --color-sage-700: #5a5b3b;
+
+  /* Neutres chauds */
+  --color-cream: #fcf0e1;
+  --color-ivory: #f2efe7;
+  --color-paper: #faf6f0;
+  --color-sand: #efe4d4;
+  --color-ink: #1e2e36;
+}
+
+/* ---------------------------------------------------------------------------
+   Compléments au portage Vue
+   ---------------------------------------------------------------------------
+   Tout ce qui suit n'existe pas dans la maquette parce que la maquette n'en
+   avait pas besoin : pages ajoutées (mentions légales, confidentialité), états
+   du formulaire de contact devenu asynchrone, et lien d'évitement.
+--------------------------------------------------------------------------- */
+@layer design {
+  /* Reprises du preflight de Tailwind que la charte ne neutralise pas d'elle-même.
+
+     Les exposants de siècle (« XIV<sup>e</sup> ») sont partout sur ce site. La
+     charte les relève avec `vertical-align: .35em` ; le preflight, lui, les
+     relève AUSSI avec `position: relative; top: -.5em`. Les deux décalages
+     s'additionnent et le « e » monte deux fois trop haut. On rend donc au `sup`
+     son positionnement normal et on laisse la charte décider seule. */
+  sup,
+  sub {
+    position: static;
+    top: auto;
+    bottom: auto;
+  }
+
+  /* Même raison : le preflight retire les puces de toutes les listes. C'est ce
+     que veut la charte pour ses listes de mise en page, mais pas pour du texte
+     suivi comme les pages légales, où une énumération doit se voir. */
+  .prose-legal ul {
+    list-style: disc;
+  }
+
+  /* La charte a été dessinée dans un navigateur sans reset global : `base.css`
+     ne remet à zéro que `p` et les titres, et ses `<dl>` gardaient donc la
+     marge par défaut du navigateur. Le preflight de Tailwind la supprime, ce
+     qui resserrait de 15 px le programme horaire des événements. On la rend au
+     `dl` ; la charte continue de surcharger le haut là où elle le veut
+     (`.prog { margin-top: var(--sp-4) }`). */
+  dl {
+    margin-block: 1em;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  /* Lien d'évitement — visible seulement au clavier. */
+  .skip {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    background: var(--c-clay-600);
+    color: #fff;
+    padding: 0.75rem 1.25rem;
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+  .skip:focus {
+    left: 0;
+    text-decoration: none;
+  }
+
+  /* Retour du formulaire de contact (succès / erreur). */
+  .cform .retour {
+    grid-column: 1 / -1;
+    font-size: var(--fs-sm);
+    padding: 0.875rem 1rem;
+    border-left: 3px solid;
+    line-height: 1.5;
+  }
+  .cform .retour.ok {
+    border-color: var(--c-sage-500);
+    background: var(--color-success-soft);
+    color: var(--c-sage-700);
+  }
+  .cform .retour.ko {
+    border-color: var(--color-danger);
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
+  }
+  .cform .btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  /* Pages de texte (mentions légales, confidentialité). */
+  .prose-legal {
+    max-width: 70ch;
+  }
+  .prose-legal h2 {
+    font-size: var(--fs-xl);
+    margin-top: var(--sp-7);
+  }
+  .prose-legal h2:first-child {
+    margin-top: 0;
+  }
+  .prose-legal p,
+  .prose-legal ul {
+    margin-top: var(--sp-4);
+    color: var(--color-text-muted);
+  }
+  .prose-legal ul {
+    padding-left: 1.25rem;
+  }
+  .prose-legal li {
+    margin-top: 0.375rem;
+  }
+
+  /* Page 404. */
+  .err {
+    min-height: 60vh;
+    display: grid;
+    align-content: center;
+    padding-block: clamp(3rem, 8vw, 6rem);
+  }
+  .err .code {
+    font-family: var(--font-accent);
+    font-style: italic;
+    font-size: clamp(3rem, 10vw, 6rem);
+    line-height: 1;
+    color: var(--c-clay-300);
+  }
+  .err h1 {
+    margin-top: var(--sp-4);
+    font-size: clamp(1.75rem, 4vw, 2.875rem);
+  }
+  .err p {
+    margin-top: var(--sp-4);
+    color: var(--color-text-muted);
+    font-size: var(--fs-lg);
+    max-width: 46ch;
+  }
+}

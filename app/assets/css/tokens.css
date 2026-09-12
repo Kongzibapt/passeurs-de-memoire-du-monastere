@@ -1,0 +1,175 @@
+@layer design {
+/* ============================================================
+   LES PASSEURS DE MÉMOIRE DU MONASTÈRE
+   tokens.css — Jetons de conception (design tokens)
+   ------------------------------------------------------------
+   Source unique de vérité. À importer dans tout projet :
+   <link rel="stylesheet" href="tokens/tokens.css" />
+   Palette extraite du logo · Typographie 1 (Grotesque éditorial)
+   ============================================================ */
+
+:root{
+
+  /* --------------------------------------------------------
+     1. COULEURS DE MARQUE
+     -------------------------------------------------------- */
+
+  /* Terre cuite — couleur PRINCIPALE (le pont) */
+  --c-clay-50:  #FBF1E6;
+  --c-clay-100: #F4DEC6;
+  --c-clay-200: #EAC4A0;
+  --c-clay-300: #E0A878;   /* terre claire — présent dans le logo */
+  --c-clay-400: #D49258;
+  --c-clay-500: #C77F4A;   /* ★ couleur de marque */
+  --c-clay-600: #AC683A;   /* primary (usage UI, meilleur contraste) */
+  --c-clay-700: #8C5230;
+  --c-clay-800: #663C25;
+  --c-clay-900: #45291A;
+
+  /* Ardoise — le clocher, les toitures, le tracé du cercle */
+  --c-slate-50:  #EBEFF1;
+  --c-slate-100: #D7DFE3;
+  --c-slate-200: #B7C4CA;
+  --c-slate-400: #6C8590;
+  --c-slate-600: #46606D;
+  --c-slate-700: #2E4450;  /* ★ ardoise du logo */
+  --c-slate-900: #1E2E36;
+
+  /* Rivière — l'Aveyron */
+  --c-river-100: #DCE9EE;
+  --c-river-300: #9FBFCF;
+  --c-river-500: #5C8FA8;  /* ★ rivière du logo */
+  --c-river-700: #3E687C;
+
+  /* Sauge — la végétation */
+  --c-sage-100: #E7E7D5;
+  --c-sage-300: #BFC09A;
+  --c-sage-500: #7E7E54;   /* ★ sauge du logo */
+  --c-sage-700: #5A5B3B;
+
+  /* Neutres chauds */
+  --c-cream: #FCF0E1;   /* fond du logo */
+  --c-ivory: #F2EFE7;   /* blanc cassé du logo */
+  --c-paper: #FAF6F0;
+  --c-sand:  #EFE4D4;   /* sable du logo */
+  --c-ink:   #1E2E36;   /* texte principal (= ardoise 900) */
+  --c-ink-soft: #46606D;
+
+  /* --------------------------------------------------------
+     2. RÔLES SÉMANTIQUES  (à privilégier dans le code)
+     -------------------------------------------------------- */
+  --color-bg:            #F4EFE7;   /* fond de page */
+  --color-surface:       #FFFFFF;   /* cartes, panneaux */
+  --color-surface-2:     #FAF6F0;   /* champs, zones secondaires */
+  --color-surface-cream: var(--c-cream);
+  --color-border:        #DFD8CB;
+  --color-border-strong: #C9BFAE;
+
+  --color-text:        var(--c-ink);
+  --color-text-muted:  var(--c-ink-soft);
+  --color-text-invert: #FFFFFF;
+
+  --color-primary:        var(--c-clay-600);
+  --color-primary-hover:  var(--c-clay-700);
+  --color-primary-soft:   var(--c-clay-100);
+  --color-on-primary:     #FFFFFF;
+
+  --color-accent-river: var(--c-river-500);
+  --color-accent-sage:  var(--c-sage-500);
+  --color-accent-slate: var(--c-slate-700);
+
+  /* États */
+  --color-success: var(--c-sage-700);
+  --color-success-soft: var(--c-sage-100);
+  --color-info:    var(--c-river-700);
+  --color-info-soft: var(--c-river-100);
+  --color-warning: #B5751E;
+  --color-warning-soft: #F6E4C4;
+  --color-danger:  #A23A2A;
+  --color-danger-soft: #F2D9D3;
+
+  /* --------------------------------------------------------
+     3. TYPOGRAPHIE  (Typographie 1 validée)
+     -------------------------------------------------------- */
+  --font-display: "Schibsted Grotesk", system-ui, -apple-system, sans-serif;
+  --font-body:    "Mulish", system-ui, -apple-system, sans-serif;
+  --font-accent:  "Newsreader", Georgia, "Times New Roman", serif; /* italique pour exergues */
+  --font-mono:    "SF Mono", ui-monospace, "Cascadia Code", Menlo, monospace;
+
+  --fw-regular: 400;
+  --fw-medium:  500;
+  --fw-semibold:600;
+  --fw-bold:    700;
+  --fw-display: 800;
+
+  --tracking-tight: -0.03em;
+  --tracking-snug:  -0.015em;
+  --tracking-normal: 0;
+  --tracking-wide:  0.08em;
+  --tracking-caps:  0.14em;
+
+  --leading-tight: 1.05;
+  --leading-snug:  1.25;
+  --leading-normal:1.6;
+
+  /* Échelle typographique (rem, base 16px) */
+  --fs-xs:   0.8125rem;  /* 13px */
+  --fs-sm:   0.9375rem;  /* 15px */
+  --fs-base: 1.0625rem;  /* 17px */
+  --fs-lg:   1.25rem;    /* 20px */
+  --fs-xl:   1.625rem;   /* 26px */
+  --fs-2xl:  2.125rem;   /* 34px */
+  --fs-3xl:  2.875rem;   /* 46px */
+  --fs-4xl:  3.875rem;   /* 62px */
+  --fs-5xl:  5.25rem;    /* 84px */
+
+  /* --------------------------------------------------------
+     4. ESPACEMENT  (échelle 4px)
+     -------------------------------------------------------- */
+  --sp-0: 0;
+  --sp-1: 0.25rem;  /* 4 */
+  --sp-2: 0.5rem;   /* 8 */
+  --sp-3: 0.75rem;  /* 12 */
+  --sp-4: 1rem;     /* 16 */
+  --sp-5: 1.5rem;   /* 24 */
+  --sp-6: 2rem;     /* 32 */
+  --sp-7: 3rem;     /* 48 */
+  --sp-8: 4rem;     /* 64 */
+  --sp-9: 6rem;     /* 96 */
+  --sp-10: 8rem;    /* 128 */
+
+  /* --------------------------------------------------------
+     5. RAYONS  (Direction B — nets, éditoriaux)
+     -------------------------------------------------------- */
+  --radius-sm:  3px;
+  --radius-md:  6px;
+  --radius-lg:  10px;
+  --radius-xl:  14px;
+  --radius-2xl: 20px;
+  --radius-pill: 999px;
+
+  /* --------------------------------------------------------
+     6. OMBRES
+     -------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(30,46,54,.07);
+  --shadow-md: 0 6px 18px rgba(30,46,54,.09);
+  --shadow-lg: 0 20px 50px rgba(30,46,54,.14);
+  --shadow-focus: 0 0 0 3px rgba(172,104,58,.28);
+
+  /* --------------------------------------------------------
+     7. CONTENEURS & DISPOSITION
+     -------------------------------------------------------- */
+  --container-sm: 640px;
+  --container-md: 860px;
+  --container-lg: 1080px;
+  --container-xl: 1280px;
+
+  /* --------------------------------------------------------
+     8. MOUVEMENT
+     -------------------------------------------------------- */
+  --ease: cubic-bezier(.2,.6,.2,1);
+  --dur-fast: .15s;
+  --dur:      .25s;
+  --dur-slow: .4s;
+}
+}

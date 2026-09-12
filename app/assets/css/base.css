@@ -1,0 +1,184 @@
+@layer design {
+/* ============================================================
+   LES PASSEURS DE MÉMOIRE DU MONASTÈRE
+   base.css — Reset, typographie, utilitaires & composants
+   ------------------------------------------------------------
+   À charger APRÈS tokens.css et la police (Google Fonts) :
+   <link rel="stylesheet" href="tokens/tokens.css" />
+   <link rel="stylesheet" href="tokens/base.css" />
+   ============================================================ */
+
+/* ---------- Reset léger ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  background:var(--color-bg);
+  color:var(--color-text);
+  font-family:var(--font-body);
+  font-size:var(--fs-base);
+  line-height:var(--leading-normal);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+img,svg{ display:block; max-width:100%; }
+button,input,textarea,select{ font:inherit; color:inherit; }
+a{ color:var(--color-primary); text-decoration:none; }
+a:hover{ text-decoration:underline; }
+
+/* ---------- Typographie ---------- */
+h1,h2,h3,h4,h5{
+  font-family:var(--font-display);
+  font-weight:var(--fw-bold);
+  letter-spacing:var(--tracking-tight);
+  line-height:var(--leading-tight);
+  margin:0;
+  color:var(--color-text);
+  text-wrap:balance;
+}
+h1{ font-size:var(--fs-4xl); }
+h2{ font-size:var(--fs-2xl); }
+h3{ font-size:var(--fs-xl); }
+h4{ font-size:var(--fs-lg); }
+p{ margin:0; text-wrap:pretty; }
+
+.t-display{ font-family:var(--font-display); font-weight:var(--fw-display); letter-spacing:var(--tracking-tight); line-height:var(--leading-tight); }
+.t-accent{ font-family:var(--font-accent); font-style:italic; }
+.t-mono{ font-family:var(--font-mono); font-size:var(--fs-xs); letter-spacing:.01em; }
+.t-eyebrow{
+  display:inline-flex; align-items:center; gap:.5rem;
+  font-weight:var(--fw-bold); font-size:var(--fs-xs);
+  letter-spacing:var(--tracking-caps); text-transform:uppercase;
+  color:var(--color-primary);
+}
+.t-eyebrow::before{ content:""; width:1.5rem; height:2px; background:currentColor; }
+.t-muted{ color:var(--color-text-muted); }
+.t-center{ text-align:center; }
+
+/* ---------- Conteneurs & utilitaires ---------- */
+.container{ max-width:var(--container-lg); margin-inline:auto; padding-inline:var(--sp-6); }
+.container-md{ max-width:var(--container-md); margin-inline:auto; padding-inline:var(--sp-6); }
+.stack{ display:flex; flex-direction:column; }
+.stack-2{ gap:var(--sp-2); } .stack-3{ gap:var(--sp-3); } .stack-4{ gap:var(--sp-4); }
+.stack-5{ gap:var(--sp-5); } .stack-6{ gap:var(--sp-6); }
+.row{ display:flex; align-items:center; }
+.row-gap-2{ gap:var(--sp-2); } .row-gap-3{ gap:var(--sp-3); } .row-gap-4{ gap:var(--sp-4); }
+.wrap{ flex-wrap:wrap; }
+
+/* ============================================================
+   COMPOSANTS
+   ============================================================ */
+
+/* ---------- Boutons ---------- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  font-family:var(--font-body); font-weight:var(--fw-semibold); font-size:var(--fs-sm);
+  line-height:1; padding:.75rem 1.375rem; border-radius:var(--radius-md);
+  border:1.5px solid transparent; cursor:pointer; white-space:nowrap;
+  transition:background var(--dur) var(--ease), border-color var(--dur) var(--ease),
+             color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.btn:active{ transform:translateY(1px); }
+.btn:focus-visible{ outline:none; box-shadow:var(--shadow-focus); }
+.btn-primary{ background:var(--color-primary); color:var(--color-on-primary); box-shadow:var(--shadow-sm); }
+.btn-primary:hover{ background:var(--color-primary-hover); }
+.btn-secondary{ background:transparent; color:var(--color-primary); border-color:var(--color-primary); }
+.btn-secondary:hover{ background:var(--color-primary-soft); }
+.btn-ghost{ background:transparent; color:var(--color-text); }
+.btn-ghost:hover{ background:var(--color-surface-2); }
+.btn-river{ background:var(--color-accent-river); color:#fff; }
+.btn-river:hover{ filter:brightness(.93); }
+.btn[disabled]{ opacity:.45; cursor:not-allowed; }
+.btn-lg{ padding:.9375rem 1.75rem; font-size:var(--fs-base); }
+.btn-sm{ padding:.5rem 1rem; font-size:var(--fs-xs); }
+
+/* ---------- Badges / étiquettes ---------- */
+.badge{
+  display:inline-flex; align-items:center; gap:.375rem;
+  font-weight:var(--fw-semibold); font-size:var(--fs-xs);
+  padding:.3125rem .6875rem; border-radius:var(--radius-pill); line-height:1;
+}
+.badge-dot::before{ content:""; width:6px; height:6px; border-radius:50%; background:currentColor; }
+.badge-clay{  background:var(--c-clay-100);  color:var(--c-clay-700); }
+.badge-slate{ background:var(--c-slate-50);  color:var(--c-slate-700); }
+.badge-river{ background:var(--c-river-100); color:var(--c-river-700); }
+.badge-sage{  background:var(--c-sage-100);  color:var(--c-sage-700); }
+
+/* ---------- Cartes ---------- */
+.card{
+  background:var(--color-surface); border:1px solid var(--color-border);
+  border-radius:var(--radius-lg); overflow:hidden;
+}
+.card-pad{ padding:var(--sp-6); }
+.card-hover{ transition:box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.card-hover:hover{ box-shadow:var(--shadow-lg); transform:translateY(-2px); }
+
+/* Fiche patrimoine */
+.fiche{ background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow-md); }
+.fiche-media{ aspect-ratio:3/2; background:var(--c-sand); display:flex; align-items:center; justify-content:center; }
+.fiche-media img{ width:100%; height:100%; object-fit:cover; }
+.fiche-body{ padding:var(--sp-5); }
+.fiche-kicker{ font-size:var(--fs-xs); color:var(--color-primary); font-weight:var(--fw-bold); letter-spacing:var(--tracking-caps); text-transform:uppercase; }
+.fiche-body h3{ margin:.5rem 0; }
+.fiche-foot{ display:flex; gap:var(--sp-2); margin-top:var(--sp-4); flex-wrap:wrap; }
+
+/* ---------- Formulaires ---------- */
+.field{ display:flex; flex-direction:column; gap:.4375rem; margin-bottom:var(--sp-4); }
+.field label{ font-size:var(--fs-sm); font-weight:var(--fw-semibold); }
+.field .hint{ font-size:var(--fs-xs); color:var(--color-text-muted); }
+.input, .field input, .field textarea, .field select{
+  font-size:var(--fs-sm); background:var(--color-surface-2);
+  border:1px solid var(--color-border); border-radius:var(--radius-md);
+  padding:.6875rem .8125rem; outline:none;
+  transition:border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.field input:focus, .field textarea:focus, .field select:focus, .input:focus{
+  border-color:var(--color-primary); box-shadow:var(--shadow-focus);
+}
+.field-error input, .field-error textarea{ border-color:var(--color-danger); }
+.field-error .msg{ font-size:var(--fs-xs); color:var(--color-danger); }
+.check{ display:flex; align-items:flex-start; gap:.625rem; font-size:var(--fs-sm); }
+.check input{ width:1.125rem; height:1.125rem; accent-color:var(--color-primary); margin-top:.125rem; }
+
+/* ---------- Alertes ---------- */
+.alert{ display:flex; gap:.75rem; padding:var(--sp-4) var(--sp-5); border-radius:var(--radius-md); border:1px solid; font-size:var(--fs-sm); }
+.alert-info{    background:var(--color-info-soft);    border-color:var(--c-river-300); color:var(--color-info); }
+.alert-success{ background:var(--color-success-soft); border-color:var(--c-sage-300);  color:var(--color-success); }
+.alert-warning{ background:var(--color-warning-soft); border-color:#E4BE78; color:var(--color-warning); }
+.alert-danger{  background:var(--color-danger-soft);  border-color:#D9A99E; color:var(--color-danger); }
+
+/* ---------- Navigation ---------- */
+.nav{ display:flex; align-items:center; gap:.5rem; background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-pill); padding:.5rem .5rem .5rem 1.125rem; }
+.nav-item{ font-weight:var(--fw-semibold); font-size:var(--fs-sm); padding:.5rem .875rem; border-radius:var(--radius-pill); color:var(--color-text-muted); cursor:pointer; white-space:nowrap; transition:background var(--dur) var(--ease), color var(--dur) var(--ease); }
+.nav-item:hover{ color:var(--color-text); text-decoration:none; }
+.nav-item.is-active{ background:var(--color-surface-2); color:var(--color-text); }
+.nav .btn{ border-radius:var(--radius-pill); }
+
+/* ---------- Citation ---------- */
+.quote{ background:var(--c-clay-700); color:#fff; border-radius:var(--radius-lg); padding:var(--sp-7); }
+.quote-mark{ font-family:var(--font-accent); font-style:italic; font-size:5rem; line-height:.6; opacity:.4; }
+.quote-mark--close{ display:block; text-align:right; transform:rotate(180deg); }
+.quote blockquote{ font-family:var(--font-accent); font-style:italic; font-size:var(--fs-xl); margin:0; }
+.quote cite{ display:block; margin-top:var(--sp-4); font-style:normal; font-size:var(--fs-sm); opacity:.82; font-family:var(--font-body); }
+
+/* ---------- Verrouillage logo ---------- */
+.logo-lockup{ display:flex; align-items:center; gap:1.25rem; }
+.logo-lockup .emblem{ flex:none; width:64px; height:64px; }
+.logo-lockup .emblem img,.logo-lockup .emblem svg{ width:100%; height:100%; object-fit:contain; }
+.logo-words{ display:flex; flex-direction:column; line-height:1; }
+.logo-words .l1{ font-family:var(--font-display); font-weight:var(--fw-display); text-transform:uppercase; font-size:1.0625rem; letter-spacing:.005em; }
+.logo-words .l2{ font-family:var(--font-accent); font-style:italic; font-size:.875rem; color:var(--color-text-muted); margin-top:.375rem; }
+
+/* ---------- Frise chronologique ---------- */
+.timeline{ position:relative; padding-left:var(--sp-6); }
+.timeline::before{ content:""; position:absolute; left:7px; top:6px; bottom:6px; width:2px; background:var(--color-border); }
+.timeline-item{ position:relative; padding-bottom:var(--sp-6); }
+.timeline-item::before{ content:""; position:absolute; left:-31px; top:5px; width:14px; height:14px; border-radius:50%; background:var(--color-primary); border:3px solid var(--color-bg); }
+.timeline-date{ font-family:var(--font-accent); font-style:italic; color:var(--color-primary); font-size:var(--fs-base); }
+.timeline-item h4{ margin:.25rem 0; }
+
+/* ---------- Accessibilité ---------- */
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+}
+}

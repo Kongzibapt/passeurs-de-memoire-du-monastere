@@ -1,0 +1,41 @@
+{
+  "name": "passeurs-de-memoire",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report"
+  },
+  "dependencies": {
+    "@pinia/nuxt": "^0.11.3",
+    "@supabase/supabase-js": "^2.47.10",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
+    "html-to-image": "^1.11.13",
+    "nodemailer": "^9.0.3",
+    "nuxt": "^4.0.0",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.13",
+    "vue-router": "^5.1.0"
+  },
+  "devDependencies": {
+    "@nuxt/image": "^2.0.0",
+    "@nuxtjs/robots": "^6.1.2",
+    "@nuxtjs/sitemap": "^8.2.2",
+    "@playwright/test": "^1.61.1",
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/node": "^26.1.0",
+    "@types/nodemailer": "^8.0.1",
+    "tailwindcss": "^4.0.0",
+    "typescript": "6.0.3",
+    "vite": "^6.2.3",
+    "vue-tsc": "^3.3.6"
+  }
+}

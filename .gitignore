@@ -1,0 +1,31 @@
+# Nuxt
+.nuxt
+.output
+.data
+.nitro
+.cache
+dist
+
+# Dépendances
+node_modules
+
+# Environnement — ne jamais committer les secrets
+.env
+.env.*
+!.env.example
+
+# Vercel
+.vercel
+
+# Tests
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
+
+# Système
+.DS_Store
+*.log
+
+# Captures de comparaison avec la maquette (scripts/)
+.captures

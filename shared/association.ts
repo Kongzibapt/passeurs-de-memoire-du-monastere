@@ -12,6 +12,19 @@ export const ASSOCIATION = {
   nomLigne1: 'Les Passeurs de Mémoire',
   nomLigne2: 'du Monastère',
   email: 'lespasseursdememoire12@gmail.com',
+  /**
+   * Numéro au Répertoire National des Associations. Il identifie l'association
+   * déclarée en préfecture : c'est lui qui relie le site à une entité réelle,
+   * dans les mentions légales comme dans les données structurées.
+   */
+  rna: 'W122009323',
+  /**
+   * Personne responsable de ce qui est publié sur le site (LCEN, art. 6-III).
+   * Le libellé « Direction de la publication » reprend le terme de la loi sans
+   * lui imposer d'accord : le remplacer par « Directrice » si l'intéressée le
+   * préfère ne change rien d'autre.
+   */
+  directionPublication: 'Françoise TRANIER',
   adresse: {
     ligne1: 'Mairie du Monastère',
     codePostal: '12000',

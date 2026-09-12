@@ -21,6 +21,7 @@ npm run dev               # http://localhost:3000
 | `npm run dev` | serveur de développement |
 | `npm run build` | build de production (Nitro) |
 | `npm run preview` | sert le build localement |
+| `npm run images` | remet d'aplomb et redimensionne les photos ajoutées |
 | `npm run typecheck` | vérification TypeScript (`vue-tsc`) |
 | `npm test` | suite end-to-end Playwright |
 | `npm run test:ui` | la même, en mode pas à pas |
@@ -84,6 +85,26 @@ Trois conséquences, voulues :
 Le contenu historique (les trois monuments, la frise, le comparateur) vit dans
 `app/data/` et n'est **pas** éditable depuis le back-office : ce sont des
 notices sourcées, pas de l'actualité.
+
+### Ajouter une photo : passer par `npm run images`
+
+Les photos vont dans `public/img/`, versionnées avec le site. **Après en avoir
+déposé une, lancer `npm run images`.**
+
+Ce n'est pas une coquetterie. Un appareil photo tenu de travers n'enregistre pas
+les pixels tournés : il les laisse tels quels et ajoute une balise EXIF
+« oriente-moi de 90° ». L'aperçu de l'ordinateur lit cette balise et montre la
+photo droite — mais `@nuxt/image` réencode les photos en AVIF sans l'appliquer,
+et la photo s'affiche **couchée sur le site**, sans que rien dans le code ne
+l'explique. C'est arrivé à deux des photos de l'église.
+
+`npm run images` applique la rotation aux pixels eux-mêmes et ramène les images
+à 2880 px de large (au-delà, les pixels ne sont jamais servis). Il ne touche que
+ce qui en a besoin : le relancer ne dégrade rien.
+
+```bash
+npm run images -- --test   # signale sans modifier — utile en revue
+```
 
 ---
 
@@ -210,8 +231,6 @@ les balises Open Graph doivent désigner l'hôte réellement servi.
 
 ## À compléter avant la mise en ligne
 
-- [ ] **Mentions légales** — numéro RNA de l'association et nom du directeur de
-      la publication (`app/pages/mentions-legales.vue`, marqués `[à compléter]`).
 - [ ] **Image Open Graph** — déposer un `public/og-image.jpg` de 1200 × 630 px.
       Elle est déjà déclarée dans `nuxt.config.ts` ; sans le fichier, les
       partages sur les réseaux sociaux s'afficheront sans visuel.

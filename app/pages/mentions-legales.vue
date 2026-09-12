@@ -7,8 +7,7 @@ import { filAriane } from '~/utils/structuredData'
  *
  * Cette page ne vient pas de la maquette : elle est ajoutée parce qu'un site
  * d'association ouvert au public doit identifier son éditeur et son hébergeur
- * (LCEN, art. 6-III). Les valeurs entre crochets restent à compléter par
- * l'association — voir la section « À compléter » du README.
+ * (LCEN, art. 6-III). Toutes les valeurs viennent de `shared/association.ts`.
  */
 const { public: { siteUrl } } = useRuntimeConfig()
 
@@ -45,7 +44,8 @@ useHead({
           <a :href="`mailto:${ASSOCIATION.email}`">{{ ASSOCIATION.email }}</a>.
         </p>
         <p>
-          Numéro RNA : [à compléter]. Directeur de la publication : [président·e de l'association].
+          Numéro RNA : {{ ASSOCIATION.rna }}.<br>
+          Direction de la publication : {{ ASSOCIATION.directionPublication }}.
         </p>
 
         <h2>Hébergement</h2>

@@ -46,6 +46,10 @@ test.describe('Accueil', () => {
   })
 
   test('toutes les images se chargent', async ({ page }) => {
+    // Au tout premier passage, IPX fabrique les AVIF des 27 photos à la demande :
+    // c'est long, et une seule fois. Sans ce délai élargi, le test expirait au
+    // bout des 30 secondes par défaut alors que les images arrivaient bien.
+    test.setTimeout(120_000)
     await allerA(page)
     await chargerImages(page)
     const cassees = await page.evaluate(() =>

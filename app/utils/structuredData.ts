@@ -20,6 +20,9 @@ export function associationLd(siteUrl: string) {
     url: base,
     email: ASSOCIATION.email,
     logo: `${base}/assets/logo-officiel.png`,
+    // Le numéro RNA rattache le site à l'association déclarée en préfecture ;
+    // c'est l'identifiant le plus fiable dont dispose une association loi 1901.
+    identifier: ASSOCIATION.rna,
     slogan: ASSOCIATION.devise,
     address: {
       '@type': 'PostalAddress',

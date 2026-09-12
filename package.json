@@ -8,6 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "images": "node scripts/normaliser-images.mjs",
     "typecheck": "nuxt typecheck",
     "test": "playwright test",
     "test:ui": "playwright test --ui",

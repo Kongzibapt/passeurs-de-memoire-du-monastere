@@ -117,9 +117,12 @@ const etiquette = 'block text-[11px] font-bold uppercase tracking-[0.12em] text-
         <div class="sm:col-span-2">
           <label :class="etiquette" for="a-src">Chemin de l'image</label>
           <input id="a-src" v-model="brouillon.src" :class="champ" required placeholder="/img/archive-pont.jpg">
-          <p class="mt-1 text-[12px] text-slate-500">
+          <p class="mt-1 text-[12px] leading-relaxed text-slate-500">
             Déposer le fichier dans <code class="font-mono">public/img/</code> du dépôt, puis
-            indiquer ici son chemin depuis la racine du site.
+            indiquer ici son chemin depuis la racine du site. Après l'avoir déposé, lancer
+            <code class="font-mono">npm run images</code> : une photo prise à la verticale
+            s'affiche droite sur l'ordinateur mais couchée sur le site tant qu'on ne l'a pas
+            redressée pour de bon.
           </p>
         </div>
         <div>

@@ -1,12 +1,15 @@
 import tailwindcss from '@tailwindcss/vite'
 
-// URL de production, source unique (canonical, sitemap, Open Graph).
+// URL de production, source unique (canonique, sitemap, Open Graph).
 // Modifiable via la variable d'environnement NUXT_PUBLIC_SITE_URL.
-// Si le domaine est finalement servi sur le www (l'apex redirigeant vers lui),
-// il faut poser NUXT_PUBLIC_SITE_URL=https://www.… : une canonique qui redirige
-// met Google en conflit avec lui-même et fait sortir les pages de l'index.
+//
+// Le domaine servi est le www ; l'apex (sans www) redirige vers lui. Canonique,
+// sitemap, robots et Open Graph doivent donc désigner le www : une canonique
+// qui redirige met Google en conflit avec lui-même et fait sortir les pages de
+// l'index. Ne remplacer cette valeur par l'apex que si la redirection est
+// inversée côté hébergeur.
 const siteUrl = (
-  process.env.NUXT_PUBLIC_SITE_URL || 'https://passeurs-de-memoire-du-monastere.fr'
+  process.env.NUXT_PUBLIC_SITE_URL || 'https://www.passeurs-memoire-du-monastere.fr'
 ).replace(/\/$/, '')
 const ogImage = `${siteUrl}/og-image.jpg`
 

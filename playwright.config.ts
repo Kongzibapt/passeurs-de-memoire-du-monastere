@@ -20,6 +20,16 @@ const baseURL = `http://localhost:${PORT}`
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
+
+  // La suite tourne contre le serveur de DÉVELOPPEMENT, qui compile chaque
+  // route à sa première visite et fabrique les AVIF des photos à la demande. Un
+  // premier passage sur cache froid — après un `npm install` ou une
+  // modification de `nuxt.config.ts` — dépasse largement les 30 s par défaut,
+  // et la suite échouait alors sur des expirations sans qu'aucune assertion ne
+  // soit fausse. Une suite qui échoue au démarrage est une suite qu'on finit
+  // par ignorer : mieux vaut lui laisser le temps de la première compilation.
+  timeout: 90_000,
+
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,

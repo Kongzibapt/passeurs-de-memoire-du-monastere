@@ -223,9 +223,11 @@ Vercel, preset `nuxtjs` (voir `vercel.json`). Poser dans *Settings →
 Environment Variables* les clés de `.env.example` qui s'appliquent, au minimum
 `ADMIN_PASSWORD` si le back-office doit servir.
 
-Si le site est servi sur le `www` plutôt que sur l'apex, poser
-`NUXT_PUBLIC_SITE_URL=https://www.…` : la canonique, le sitemap, `robots.txt` et
-les balises Open Graph doivent désigner l'hôte réellement servi.
+Domaine servi : **`www.passeurs-memoire-du-monastere.fr`**, l'apex redirigeant
+vers lui. C'est la valeur par défaut du code, rien à poser. Si la redirection
+devait être inversée un jour, poser `NUXT_PUBLIC_SITE_URL` sur l'hôte
+réellement servi : la canonique, le sitemap, `robots.txt` et les balises Open
+Graph doivent tous désigner celui-là, jamais celui qui redirige.
 
 ---
 

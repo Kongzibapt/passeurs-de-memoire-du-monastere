@@ -168,6 +168,20 @@
     cursor: not-allowed;
   }
 
+  /* Légendes documentaires : un seul interligne pour les trois lignes.
+
+     La charte pose `line-height: 1.45` sur `.cap`, mais c'est un nombre : il se
+     recalcule sur la taille de chaque enfant. Le titre en gras (14 px) recevait
+     donc 20,3 px et la légende en italique (15 px) 21,75 px. Tant que tout
+     tenait sur une ligne, l'écart passait inaperçu ; dès que la légende
+     s'enroule — ce qui arrive systématiquement sur téléphone — on lit deux
+     rythmes différents dans le même bloc. Exprimé en `rem`, l'interligne est
+     hérité comme une longueur : les trois lignes retombent sur la même grille,
+     à toutes les largeurs. 1.359rem = 21,75 px, la valeur de la charte. */
+  .cap {
+    line-height: 1.359rem;
+  }
+
   /* Comparateur : une légende par image, sous son propre bord. */
   .cmp-sec .cmp-caps {
     display: flex;
@@ -300,6 +314,64 @@
   .car-vignette.on {
     opacity: 1;
     border-color: var(--c-clay-600);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Téléphone — 860 px, la largeur à laquelle la maquette passe sur une colonne
+     --------------------------------------------------------------------------- */
+  @media (max-width: 860px) {
+    /* L'emblème passe AU-DESSUS du titre.
+
+       Sur deux colonnes il fait face au texte ; réduite à une seule, la
+       maquette le laissait tomber à la suite, sous les boutons — un grand rond
+       posé en fin de section, qu'on ne voit qu'après avoir tout lu. Remis en
+       tête et ramené à la taille d'un cartouche, il redevient ce qu'il est :
+       la signature de l'association, avant qu'elle ne se présente. */
+    .hero .m {
+      order: -1;
+      padding-top: clamp(2rem, 6vw, 3rem);
+    }
+    .hero .brandbox {
+      margin: 0;
+      padding: 0;
+      justify-items: start;
+    }
+    .hero .brandbox img {
+      width: min(52%, 9.5rem);
+    }
+    .hero .t {
+      padding-top: var(--sp-6);
+    }
+
+    /* Le nom de l'association tient sur trois lignes une fois replié. La charte
+       les serre à 1.15 et les sépare d'un `gap` de 2,4 px : entre deux lignes
+       du même bloc on lisait 19,5 px, entre les deux blocs 22 px, et l'ensemble
+       paraissait tassé en haut. Un seul interligne, un peu plus ouvert, et plus
+       de `gap` : les trois lignes sont également espacées. */
+    .site-top .mark {
+      gap: 0;
+    }
+    .site-top .mark .l1,
+    .site-top .mark .l2 {
+      line-height: 1.28;
+    }
+
+    /* Le cliché de l'église est un portrait (2/3). Le cadre 4/3 de la version
+       repliée n'en montrait qu'une bande de moitié, prise au milieu : ni la
+       flèche du clocher en haut, ni le portail en bas. On lui rend le cadre
+       4/5 qu'il a sur grand écran, où il tient à 89 % — clocher compris. */
+    .pq-eglise .m img {
+      aspect-ratio: 4 / 5;
+      object-position: 50% 40%;
+    }
+
+    /* Le pont, lui, est un panoramique (2,2). Le cadre 4/3 n'en garde que 60 %
+       de la largeur : centré, il coupait la première arche et gardait surtout
+       les immeubles de la rive. Décalé vers la gauche, il cadre les cinq arches
+       et leur reflet. */
+    .pq-pont .m img {
+      object-position: 18% 50%;
+    }
   }
 
   /* Pages de texte (mentions légales, confidentialité). */

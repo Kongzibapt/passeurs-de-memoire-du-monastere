@@ -266,13 +266,23 @@ export const SEED_EVENEMENTS: Evenement[] = [
     slug: 'journees-du-patrimoine-2026',
     date: '2026-09-20',
     cadre: 'Journées européennes du patrimoine',
-    titre: 'Balade découverte du patrimoine du Monastère',
-    titreAccueil: 'Balade découverte du patrimoine',
+    titre: "Visites du village et de l'église",
+    titreAccueil: "Visites du village et de l'église",
     resume:
-      "Visite du village et de ses trois monuments, puis récolte de plantes et collation à l'abbaye. Le pont Vieux succède-t-il à un pont antique ? Histoire à suivre lors des Journées européennes du patrimoine.",
+      "Deux visites du village et deux visites de l'église, et une exposition ouverte tout l'après-midi à la tannerie Arnal. Le pont Vieux succède-t-il à un pont antique ? Histoire à suivre lors des Journées européennes du patrimoine.",
     description:
-      "Une visite du village et de ses trois monuments fondateurs, puis une balade de récolte de plantes et une collation préparée ensemble à l'arrivée. Le pont Vieux, daté du XIV<sup>e</sup> siècle, succède-t-il à un pont antique surmonté d'un tablier de bois ? Histoire à suivre ce jour-là. Programme et horaires en préparation avec la mairie.",
-    programme: [],
+      "Deux visites du village, deux visites de l'église, et notre exposition « Mémoire vivante d'hier et d'aujourd'hui » ouverte sans interruption à la tannerie Arnal. Les visites du village partent de devant la mairie et se terminent à la tannerie, autour d'une petite collation dont nous vous livrerons la recette. Le pont Vieux, daté du XIV<sup>e</sup> siècle, succède-t-il à un pont antique surmonté d'un tablier de bois ? Histoire à suivre ce jour-là.",
+    programme: [
+      { heure: '14h', quoi: 'Visite du village — départ devant la mairie' },
+      { heure: '15h30', quoi: "Visite de l'église" },
+      { heure: '16h', quoi: 'Visite du village — départ devant la mairie' },
+      { heure: '17h30', quoi: "Visite de l'église" },
+      {
+        heure: '14h → 18h30',
+        quoi:
+          "Exposition « Mémoire vivante d'hier et d'aujourd'hui », en continu sous notre barnum, dans la cour de la tannerie Arnal",
+      },
+    ],
     cta: {
       label: 'Être prévenu',
       href: 'mailto:?sujet=Journées du patrimoine 2026',

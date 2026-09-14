@@ -32,10 +32,23 @@ const TOLERANCE = 1.5
 /**
  * Sections volontairement différentes de la maquette, avec leur raison.
  *
- * Elles ne sont pas comparées : elles échoueraient par construction. Cette
- * liste est le seul endroit où une divergence est admise — si une section y
- * entre sans raison écrite, c'est qu'on est en train de perdre la maquette de
- * vue.
+ * C'est le seul endroit où une divergence est admise — si une section y entre
+ * sans raison écrite, c'est qu'on est en train de perdre la maquette de vue.
+ *
+ * Trois formes, de la plus permissive à la plus serrée :
+ *
+ *   'sélecteur': 'raison'
+ *       la section n'est pas comparée du tout.
+ *
+ *   'sélecteur': { raison, ignorer: [430] }
+ *       elle n'est pas comparée À CES LARGEURS seulement. Une refonte propre au
+ *       téléphone ne doit pas faire perdre de vue la version grand écran.
+ *
+ *   'sélecteur': { raison, derive: 8 }
+ *       elle est comparée, mais on tolère jusqu'à 8 px d'écart VERTICAL (y et
+ *       hauteur). Sert quand un bloc grandit de quelques pixels et pousse ce
+ *       qui suit : les abscisses, les largeurs et les éléments manquants
+ *       restent vérifiés au pixel près.
  */
 const DIVERGENCES_ASSUMEES = {
   'section.sec.pad:has(.evts)':
@@ -48,6 +61,25 @@ const DIVERGENCES_ASSUMEES = {
   '.adhere@actualites':
     'la phrase « Prochain rendez-vous » cite la date au nouveau format, plus longue d\'une ligne',
   '.foot': 'deux liens légaux ajoutés (mentions légales, données personnelles)',
+  '.site-top': {
+    raison: 'replié sur trois lignes, le nom de l\'association est réparti à interligne égal',
+    ignorer: [430],
+  },
+  '.hero': {
+    raison: 'sur téléphone, l\'emblème passe au-dessus du titre au lieu de suivre les boutons',
+    ignorer: [430],
+  },
+  '#patrimoine': {
+    raison:
+      'interligne des légendes unifié ; et sur téléphone, l\'église garde son cadre 4/5 (clocher compris) et le pont est recadré sur ses arches',
+    ignorer: [430],
+    derive: 8,
+  },
+  '.arch': {
+    raison:
+      'interligne des légendes unifié : chaque légende grandit de ~3 px et pousse la planche d\'autant',
+    derive: 8,
+  },
 }
 
 const PAGES = [
@@ -175,15 +207,24 @@ for (const page of PAGES) {
     console.log(`\n${page.nom} — ${largeur} px`)
 
     for (const [nom, selecteur] of page.sections) {
-      const raison = DIVERGENCES_ASSUMEES[selecteur]
+      const admis = DIVERGENCES_ASSUMEES[selecteur]
+      const regle = typeof admis === 'string' ? { raison: admis } : (admis ?? {})
       // Le suffixe `@page` ne sert qu'à distinguer deux sections de même
       // sélecteur sur des pages différentes ; le DOM ne le connaît pas.
       const css = selecteur.split('@')[0]
 
-      if (raison) {
-        console.log(`  ~ ${nom.padEnd(15)} non comparée — ${raison}`)
+      // Sans `ignorer`, une raison seule met la section hors comparaison ; avec
+      // `derive`, elle reste comparée et c'est la tolérance qui s'élargit.
+      const ignoree = regle.ignorer
+        ? regle.ignorer.includes(largeur)
+        : Boolean(regle.raison && !regle.derive)
+      if (ignoree) {
+        console.log(`  ~ ${nom.padEnd(15)} non comparée — ${regle.raison}`)
         continue
       }
+      // Tolérance verticale documentée : elle ne s'applique qu'à `y` et
+      // `hauteur`, et seulement aux largeurs réellement comparées.
+      const verticale = regle.derive ? Math.max(TOLERANCE, regle.derive) : TOLERANCE
 
       const [m, n] = await Promise.all([
         maquette.onglet.evaluate(releverSection, css),
@@ -209,7 +250,10 @@ for (const page of PAGES) {
           continue
         }
         const delta = a
-          .map((v, i) => (Math.abs(v - b[i]) > TOLERANCE ? `${noms[i]} ${v}→${b[i]}` : null))
+          .map((v, i) => {
+            const seuil = i === 1 || i === 3 ? verticale : TOLERANCE
+            return Math.abs(v - b[i]) > seuil ? `${noms[i]} ${v}→${b[i]}` : null
+          })
           .filter(Boolean)
         if (delta.length) ecarts.push(`${cle} — ${delta.join(', ')}`)
       }

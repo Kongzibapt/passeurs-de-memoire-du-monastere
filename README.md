@@ -272,9 +272,21 @@ sans cela, un seul écart volontaire décale tout ce qui suit et noie les vrais
 
 Les sections qui s'écartent volontairement de la maquette sont listées dans
 `DIVERGENCES_ASSUMEES`, **avec leur raison**, en tête du script : c'est le seul
-endroit où une divergence est admise. Aujourd'hui ce sont le format de date
-unifié, le formulaire de contact ajouté à la page Actualités, et les deux liens
-légaux du pied de page. Tout le reste doit correspondre au pixel.
+endroit où une divergence est admise. Trois degrés, du plus permissif au plus
+serré :
+
+| Forme | Effet |
+| --- | --- |
+| `'sélecteur': 'raison'` | la section n'est pas comparée |
+| `{ raison, ignorer: [430] }` | elle n'est pas comparée **à ces largeurs** — une refonte propre au téléphone ne fait pas perdre de vue la version grand écran |
+| `{ raison, derive: 8 }` | elle est comparée, avec 8 px de jeu **sur la verticale seulement** ; abscisses, largeurs et éléments manquants restent au pixel près |
+
+Aujourd'hui : le format de date unifié, le carrousel des souvenirs, les légendes
+scindées du comparateur, le formulaire de contact ajouté aux Actualités, les
+deux liens légaux du pied de page, l'interligne unifié des légendes (`derive`),
+et trois reprises propres au téléphone — emblème du hero, nom de l'association
+sur trois lignes, cadrages de l'église et du pont (`ignorer: [430]`). Tout le
+reste doit correspondre au pixel.
 
 ---
 

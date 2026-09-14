@@ -9,7 +9,7 @@ import tailwindcss from '@tailwindcss/vite'
 // l'index. Ne remplacer cette valeur par l'apex que si la redirection est
 // inversée côté hébergeur.
 const siteUrl = (
-  process.env.NUXT_PUBLIC_SITE_URL || 'https://www.passeurs-memoire-du-monastere.fr'
+  process.env.NUXT_PUBLIC_SITE_URL || 'https://www.passeurs-de-memoire-du-monastere.fr'
 ).replace(/\/$/, '')
 const ogImage = `${siteUrl}/og-image.jpg`
 

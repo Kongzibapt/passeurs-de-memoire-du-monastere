@@ -272,11 +272,12 @@ export const SEED_EVENEMENTS: Evenement[] = [
       "Deux visites du village et deux visites de l'église, et une exposition ouverte tout l'après-midi à la tannerie Arnal. Le pont Vieux succède-t-il à un pont antique ? Histoire à suivre lors des Journées européennes du patrimoine.",
     description:
       "Deux visites du village, deux visites de l'église, et notre exposition « Mémoire vivante d'hier et d'aujourd'hui » ouverte sans interruption à la tannerie Arnal. Les visites du village partent de devant la mairie et se terminent à la tannerie, autour d'une petite collation dont nous vous livrerons la recette. Le pont Vieux, daté du XIV<sup>e</sup> siècle, succède-t-il à un pont antique surmonté d'un tablier de bois ? Histoire à suivre ce jour-là.",
+    // Les deux visites du village sont la même visite, donnée deux fois ; idem
+    // pour l'église. Une ligne par départ répétait le libellé mot pour mot et
+    // faisait cinq lignes d'un programme qui en dit trois.
     programme: [
-      { heure: '14h', quoi: 'Visite du village — départ devant la mairie' },
-      { heure: '15h30', quoi: "Visite de l'église" },
-      { heure: '16h', quoi: 'Visite du village — départ devant la mairie' },
-      { heure: '17h30', quoi: "Visite de l'église" },
+      { heure: '14h et 16h', quoi: 'Visite du village — départ devant la mairie' },
+      { heure: '15h30 et 17h30', quoi: "Visite de l'église" },
       {
         heure: '14h → 18h30',
         quoi:

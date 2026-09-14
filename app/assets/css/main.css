@@ -320,27 +320,51 @@
      Téléphone — 860 px, la largeur à laquelle la maquette passe sur une colonne
      --------------------------------------------------------------------------- */
   @media (max-width: 860px) {
-    /* L'emblème passe AU-DESSUS du titre.
+    /* L'emblème et la ligne d'accroche ne font qu'un cartouche.
 
-       Sur deux colonnes il fait face au texte ; réduite à une seule, la
+       Sur deux colonnes, l'emblème fait face au texte ; réduite à une seule, la
        maquette le laissait tomber à la suite, sous les boutons — un grand rond
-       posé en fin de section, qu'on ne voit qu'après avoir tout lu. Remis en
-       tête et ramené à la taille d'un cartouche, il redevient ce qu'il est :
-       la signature de l'association, avant qu'elle ne se présente. */
+       posé en fin de section, qu'on ne voit qu'après avoir tout lu. Le remonter
+       ne suffisait pas : seul sur sa ligne, il laissait à sa droite une bande
+       de crème aussi haute que lui.
+
+       `display: contents` dissout la colonne de texte : ses enfants deviennent
+       les cases de la grille du hero, et l'emblème peut alors partager une
+       ligne avec l'accroche — « Du IX au XXI siècle, sur les rives de
+       l'Aveyron », qui dit précisément ce que l'emblème dessine. Le filet de
+       l'accroche court sous elle et bute contre l'emblème : la signature de
+       l'association et sa devise tiennent en un seul bloc, et le titre part
+       juste dessous, pleine largeur.
+
+       La colonne dissoute perd son `padding-block` : on le rend au hero. */
+    .hero {
+      grid-template-columns: auto 1fr;
+      column-gap: clamp(1rem, 4vw, 1.5rem);
+      padding-block: clamp(2.5rem, 6vw, 5.5rem);
+    }
+    .hero .t {
+      display: contents;
+    }
     .hero .m {
-      order: -1;
-      padding-top: clamp(2rem, 6vw, 3rem);
+      grid-column: 1;
+      grid-row: 1;
+      align-self: center;
+    }
+    .hero .rule-kicker {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .hero h1,
+    .hero .lede,
+    .hero .cta {
+      grid-column: 1 / -1;
     }
     .hero .brandbox {
       margin: 0;
       padding: 0;
-      justify-items: start;
     }
     .hero .brandbox img {
-      width: min(52%, 9.5rem);
-    }
-    .hero .t {
-      padding-top: var(--sp-6);
+      width: clamp(4.75rem, 21vw, 6.5rem);
     }
 
     /* Le nom de l'association tient sur trois lignes une fois replié. La charte

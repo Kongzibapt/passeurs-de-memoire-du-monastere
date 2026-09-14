@@ -244,7 +244,7 @@ export const SEED_EVENEMENTS: Evenement[] = [
       photos: [
         {
           src: '/img/affiche-journee-des-associations-2026.jpg',
-          alt: "Affiche de la Journée des associations du 29 août 2026 au Monastère, sur fond du pont Vieux et de l'Aveyron",
+          alt: "Affiche des Passeurs de Mémoire : « Vous habitez un village vieux de mille ans », au-dessus d'une vue du Monastère et de son église depuis les hauteurs boisées",
           titre: "L'affiche du stand",
           credit: "Affiche de l'association",
           affiche: true,

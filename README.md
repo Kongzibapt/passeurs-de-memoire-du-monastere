@@ -223,6 +223,12 @@ Vercel, preset `nuxtjs` (voir `vercel.json`). Poser dans *Settings →
 Environment Variables* les clés de `.env.example` qui s'appliquent, au minimum
 `ADMIN_PASSWORD` si le back-office doit servir.
 
+L'image de partage `public/og-image.jpg` (1200 × 630) est un recadrage de
+`public/img/pont-panorama.jpg` — région `150,90 2297×1206`, soit les arches et
+leur reflet sans le ciel superflu. Pour la refaire à partir d'une autre photo,
+c'est ce ratio de 1,905 qu'il faut viser : c'est celui qu'attendent Facebook,
+WhatsApp, LinkedIn et X.
+
 Domaine servi : **`www.passeurs-de-memoire-du-monastere.fr`**, l'apex redirigeant
 vers lui. C'est la valeur par défaut du code, rien à poser. Si la redirection
 devait être inversée un jour, poser `NUXT_PUBLIC_SITE_URL` sur l'hôte
@@ -233,9 +239,6 @@ Graph doivent tous désigner celui-là, jamais celui qui redirige.
 
 ## À compléter avant la mise en ligne
 
-- [ ] **Image Open Graph** — déposer un `public/og-image.jpg` de 1200 × 630 px.
-      Elle est déjà déclarée dans `nuxt.config.ts` ; sans le fichier, les
-      partages sur les réseaux sociaux s'afficheront sans visuel.
 - [ ] **Domaine** — confirmer l'hôte servi (apex ou `www`) et régler
       `NUXT_PUBLIC_SITE_URL` en conséquence.
 - [ ] **Supabase** — créer le projet et jouer les quatre fichiers de `supabase/`.

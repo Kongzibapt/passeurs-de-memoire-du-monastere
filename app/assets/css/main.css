@@ -168,20 +168,138 @@
     cursor: not-allowed;
   }
 
-  /* Affiches d'événement dans « C'était chez nous ».
-
-     La charte cadre les photos de souvenir en 4/3 (`.pe-ph img`), ce qui
-     convient à un cliché mais décapite une affiche : le titre et la date sont
-     en haut, et c'est précisément ce que le recadrage emporte. Une affiche
-     garde donc ses proportions A4 et se voit en entier.
-
-     `align-self: start` empêche l'affiche, plus haute que ses voisines, d'être
-     étirée à la hauteur de la rangée. */
-  .pe-ph figure.affiche {
-    align-self: start;
+  /* Comparateur : une légende par image, sous son propre bord. */
+  .cmp-sec .cmp-caps {
+    display: flex;
+    justify-content: space-between;
+    gap: clamp(1.5rem, 5vw, 4rem);
+    flex-wrap: wrap;
   }
-  .pe-ph figure.affiche img {
-    aspect-ratio: 1 / 1.414;
+  .cmp-sec .cmp-caps .droite {
+    text-align: right;
+    margin-left: auto;
+  }
+  /* Empilées faute de largeur, les deux légendes redeviennent un bloc de texte
+     ordinaire : aligner la seconde à droite ne renverrait plus à rien. */
+  @media (max-width: 700px) {
+    .cmp-sec .cmp-caps .droite {
+      text-align: left;
+      margin-left: 0;
+    }
+  }
+
+  /* Carrousel des souvenirs — « C'était chez nous ».
+
+     La charte recadrait les photos de souvenir en 4/3 (`.pe-ph img`). Cela
+     convenait à trois clichés choisis, pas au fonds réel de l'association :
+     des photos de téléphone en portrait, des panoramiques de tribune et des
+     affiches A4 cohabitent dans une même rangée. Les ramener de force à une
+     proportion commune coupait un tiers de chaque, et le titre des affiches
+     avec.
+
+     D'où un cadre carré, toujours de la même taille, où l'image est posée
+     entière. Ce qui reste autour est du papier, pas du vide : c'est la
+     présentation d'une planche d'archives. */
+  .pe-ph {
+    display: block;
+  }
+  .carrousel {
+    max-width: 34rem;
+  }
+  .car-cadre {
+    position: relative;
+    aspect-ratio: 1;
+    background: var(--c-sand);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .car-cadre img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 0;
+  }
+
+  /* Les flèches restent discrètes tant qu'on ne s'approche pas, mais toujours
+     visibles au clavier — elles sont le seul moyen d'avancer sans souris. */
+  .car-fleche {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.5rem;
+    height: 2.5rem;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(252, 240, 225, 0.82);
+    color: var(--c-ink);
+    font-size: 1.05rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease), background var(--dur) var(--ease);
+  }
+  .car-fleche.gauche {
+    left: 0.625rem;
+  }
+  .car-fleche.droite {
+    right: 0.625rem;
+  }
+  .carrousel:hover .car-fleche,
+  .car-fleche:focus-visible {
+    opacity: 1;
+  }
+  .car-fleche:hover {
+    background: var(--c-cream);
+  }
+  /* Sur écran tactile il n'y a pas de survol : les flèches y restent visibles. */
+  @media (hover: none) {
+    .car-fleche {
+      opacity: 1;
+    }
+  }
+
+  .car-rang {
+    display: block;
+    margin-top: 0.2rem;
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+  }
+
+  .car-pellicule {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .car-vignette {
+    width: 4.25rem;
+    height: 4.25rem;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--c-sand);
+    cursor: pointer;
+    opacity: 0.62;
+    transition: opacity var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  }
+  .car-vignette img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+  }
+  .car-vignette:hover,
+  .car-vignette:focus-visible {
+    opacity: 1;
+  }
+  .car-vignette.on {
+    opacity: 1;
+    border-color: var(--c-clay-600);
   }
 
   /* Pages de texte (mentions légales, confidentialité). */

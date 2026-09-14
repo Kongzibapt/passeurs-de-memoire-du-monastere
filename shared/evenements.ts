@@ -33,13 +33,6 @@ export interface PhotoSouvenir {
   titre: string
   /** Crédit affiché sous le titre. */
   credit?: string
-  /**
-   * Vrai pour une affiche d'événement. La charte cadre les photos en 4/3 ;
-   * appliqué à une affiche A4, ce cadrage en couperait le titre et la date —
-   * c'est-à-dire tout ce qu'elle sert à dire. Une affiche garde donc ses
-   * proportions, et rien n'en est rogné.
-   */
-  affiche?: boolean
 }
 
 export interface Souvenir {
@@ -201,7 +194,6 @@ export const SEED_EVENEMENTS: Evenement[] = [
           alt: "Affiche de la Nuit des églises 2026 : concert orgue, flûte traversière et chant à l'église Saint-Blaise du Monastère, le 3 juillet à 20h30, entrée libre",
           titre: "L'affiche de la soirée",
           credit: "Affiche de l'association",
-          affiche: true,
         },
         {
           src: '/img/eglise-nef.jpg',
@@ -213,6 +205,18 @@ export const SEED_EVENEMENTS: Evenement[] = [
           src: '/img/eglise-retable.jpg',
           alt: "Le retable doré de l'église pendant la présentation",
           titre: 'Le retable',
+          credit: "Photo de l'association",
+        },
+        {
+          src: '/img/concert-tribune.jpg',
+          alt: "Les musiciens du concert à la tribune d'orgue de l'église du Monastère",
+          titre: "Le concert, à la tribune d'orgue",
+          credit: "Photo de l'association",
+        },
+        {
+          src: '/img/conference-art-sacre.jpg',
+          alt: "La micro-conférence sur l'art sacré, devant le retable de l'église",
+          titre: "La micro-conférence sur l'art sacré",
           credit: "Photo de l'association",
         },
         {
@@ -247,7 +251,6 @@ export const SEED_EVENEMENTS: Evenement[] = [
           alt: "Affiche des Passeurs de Mémoire : « Vous habitez un village vieux de mille ans », au-dessus d'une vue du Monastère et de son église depuis les hauteurs boisées",
           titre: "L'affiche du stand",
           credit: "Affiche de l'association",
-          affiche: true,
         },
       ],
       cta: {

@@ -40,7 +40,10 @@ const TOLERANCE = 1.5
 const DIVERGENCES_ASSUMEES = {
   'section.sec.pad:has(.evts)':
     'les dates sont désormais calculées au format « Samedi 21 novembre 2026 », partout',
-  '.passe': 'même format de date que ci-dessus',
+  '.passe':
+    'même format de date, et les photos sont désormais dans un carrousel à cadre fixe',
+  '.cmp-sec':
+    'la légende est scindée en deux, chacune sous le bord de l\'image qu\'elle décrit',
   '.contact@actualites': 'formulaire de contact ajouté à cette page (absent de la maquette)',
   '.adhere@actualites':
     'la phrase « Prochain rendez-vous » cite la date au nouveau format, plus longue d\'une ligne',
@@ -113,9 +116,15 @@ const releverSection = (selecteur) => {
       .join('.')
     if (!classes) continue
 
+    const r = el.getBoundingClientRect()
+    // Un élément masqué (`display:none`) a un rectangle nul : sa « position »
+    // n'est que celle du coin de l'écran, et la comparer ne mesure que le
+    // défilement des deux pages. C'est le cas de la liste `.jalons`, tenue en
+    // réserve pour les navigateurs sans JavaScript.
+    if (r.width === 0 && r.height === 0) continue
+
     const cle = `${el.tagName.toLowerCase()}.${classes}`
     compteurs[cle] = (compteurs[cle] ?? 0) + 1
-    const r = el.getBoundingClientRect()
     sortie[`${cle}#${compteurs[cle]}`] = [
       Math.round((r.left - cadre.left) * 100) / 100,
       Math.round((r.top - cadre.top) * 100) / 100,

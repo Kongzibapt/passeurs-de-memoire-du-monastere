@@ -53,19 +53,7 @@ const annees = computed(() => souvenirsParAnnee(props.evenements))
         </div>
 
         <div v-if="e.souvenir?.photos.length" class="pe-ph">
-          <figure v-for="photo in e.souvenir.photos" :key="photo.src" :class="{ affiche: photo.affiche }">
-            <NuxtImg
-              :src="photo.src"
-              :alt="photo.alt"
-              loading="lazy"
-              decoding="async"
-              sizes="xs:50vw sm:50vw md:33vw lg:260px xl:260px xxl:260px"
-            />
-            <figcaption class="cap">
-              <b>{{ photo.titre }}</b>
-              <span v-if="photo.credit" class="crd">{{ photo.credit }}</span>
-            </figcaption>
-          </figure>
+          <SouvenirCarrousel :photos="e.souvenir.photos" :evenement="e.titre" />
         </div>
       </article>
     </div>

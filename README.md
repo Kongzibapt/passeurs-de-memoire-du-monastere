@@ -114,6 +114,20 @@ chaque image a été relevée de 320 px à 1920 px de fenêtre, puis arrondie ve
 haut. Demander un peu trop large ne coûte que des octets ; demander trop étroit
 rend l'image floue.
 
+### Les images d'un souvenir sont dans un carrousel
+
+La charte recadrait les photos de souvenir en 4/3. Cela convenait aux trois
+clichés de la maquette, pas au fonds réel : des photos de téléphone en portrait,
+des panoramiques de tribune et des affiches A4 cohabitent dans une même rangée.
+Les ramener de force à une proportion commune coupait un tiers de chaque, et le
+titre des affiches avec.
+
+`SouvenirCarrousel.vue` pose donc chaque image entière (`object-fit: contain`)
+dans un cadre carré qui ne change jamais de taille. Ce qui reste autour est du
+papier, pas du vide : c'est la présentation d'une planche d'archives. Pas de
+défilement automatique — ce sont des archives qu'on regarde, pas une bannière
+qu'on subit.
+
 ### Affiches d'événement
 
 Les affiches sont dessinées en HTML dans le bundle Claude Design, une planche

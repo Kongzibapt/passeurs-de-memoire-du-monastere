@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { COMPARAISONS, INTRO_INITIALE, LEGENDE_INITIALE } from '~/data/comparaisons'
+import { COMPARAISONS, INTRO_INITIALE } from '~/data/comparaisons'
 
 /**
  * « Autrefois · aujourd'hui » — deux vues superposées, séparées par une ligne
@@ -27,7 +27,6 @@ const courant = computed(() => COMPARAISONS.find((c) => c.cle === actif.value) ?
 const intact = ref(true)
 const titre = computed(() => (intact.value ? INTRO_INITIALE.titre : courant.value.titre))
 const texte = computed(() => (intact.value ? INTRO_INITIALE.texte : courant.value.texte))
-const legende = computed(() => (intact.value ? LEGENDE_INITIALE : courant.value.legende))
 
 function choisir(cle: (typeof COMPARAISONS)[number]['cle']) {
   intact.value = false
@@ -119,6 +118,15 @@ function surPointeur(e: PointerEvent) {
       >
     </div>
 
-    <figcaption class="cap" v-html="legende" />
+    <!-- Une légende par image, posée sous le bord qu'elle décrit : la
+         provenance de la carte postale à gauche, la date du cliché récent à
+         droite. Réunies en un seul bloc, elles obligeaient à lire toute la
+         phrase pour savoir laquelle des deux vues on regardait. -->
+    <div class="cmp-caps">
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <figcaption class="cap" v-html="courant.avant.legende" />
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <figcaption class="cap droite" v-html="courant.apres.legende" />
+    </div>
   </section>
 </template>

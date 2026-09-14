@@ -42,7 +42,7 @@ const { selectionner } = useComparateur()
               :alt="m.image.alt"
               loading="lazy"
               decoding="async"
-              sizes="100vw md:100vw lg:1140px"
+              sizes="xs:90vw sm:90vw md:90vw lg:90vw xl:1140px xxl:1140px"
             />
             <figcaption class="cap">
               <b>{{ m.image.titre }}</b> {{ m.image.legende }}
@@ -73,7 +73,7 @@ const { selectionner } = useComparateur()
               :style="m.image.position ? { objectPosition: m.image.position } : undefined"
               loading="lazy"
               decoding="async"
-              sizes="100vw md:50vw lg:560px"
+              sizes="xs:90vw sm:90vw md:90vw lg:50vw xl:560px xxl:560px"
             />
             <figcaption class="cap">
               <b>{{ m.image.titre }}</b> {{ m.image.legende }}
@@ -96,7 +96,7 @@ const { selectionner } = useComparateur()
               :style="m.image.position ? { objectPosition: m.image.position } : undefined"
               loading="lazy"
               decoding="async"
-              sizes="100vw md:50vw lg:560px"
+              sizes="xs:90vw sm:90vw md:90vw lg:50vw xl:560px xxl:560px"
             />
             <figcaption class="cap">
               <b>{{ m.image.titre }}</b> {{ m.image.legende }}

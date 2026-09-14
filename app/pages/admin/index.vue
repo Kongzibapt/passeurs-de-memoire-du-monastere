@@ -118,15 +118,5 @@ const outils = [
         <span class="mt-4 inline-block text-[14px] font-semibold text-clay-700">Ouvrir →</span>
       </NuxtLink>
     </div>
-
-    <div class="mt-10 border-l-4 border-clay-300 bg-clay-50 p-5">
-      <h2 class="font-display text-[15px] font-bold">Avant la première utilisation</h2>
-      <p class="mt-2 max-w-[70ch] text-[14px] leading-relaxed text-slate-700">
-        Les écritures ont besoin de Supabase. Si un enregistrement échoue en disant qu'une table est
-        absente, c'est que les fichiers de <code class="font-mono text-[13px]">supabase/</code> n'ont
-        pas encore été joués dans l'éditeur SQL du projet. La lecture, elle, fonctionne sans base :
-        le site affiche alors le contenu défini dans le code.
-      </p>
-    </div>
   </AdminShell>
 </template>

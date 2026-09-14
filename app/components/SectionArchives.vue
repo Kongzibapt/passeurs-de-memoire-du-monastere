@@ -38,7 +38,7 @@ const { data: archives } = await useArchives()
             :alt="doc.alt"
             loading="lazy"
             decoding="async"
-            sizes="100vw sm:50vw lg:380px"
+            sizes="xs:40vw sm:40vw md:40vw lg:30vw xl:360px xxl:360px"
           />
           <figcaption class="cap">
             <b>{{ doc.titre }}</b> {{ doc.legende }}

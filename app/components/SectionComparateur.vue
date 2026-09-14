@@ -95,7 +95,7 @@ function surPointeur(e: PointerEvent) {
         :style="{ objectPosition: courant.avant.position }"
         loading="lazy"
         decoding="async"
-        sizes="100vw lg:1140px"
+        sizes="xs:90vw sm:90vw md:90vw lg:90vw xl:1140px xxl:1140px"
       />
       <NuxtImg
         class="after"
@@ -104,7 +104,7 @@ function surPointeur(e: PointerEvent) {
         :style="{ objectPosition: courant.apres.position }"
         loading="lazy"
         decoding="async"
-        sizes="100vw lg:1140px"
+        sizes="xs:90vw sm:90vw md:90vw lg:90vw xl:1140px xxl:1140px"
       />
       <div class="handle" aria-hidden="true" />
       <div class="tag l">Autrefois</div>

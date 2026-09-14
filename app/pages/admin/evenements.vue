@@ -315,12 +315,6 @@ const etiquette = 'block text-[11px] font-bold uppercase tracking-[0.12em] text-
             >
               {{ e.date >= jour ? 'À venir' : e.souvenir ? 'Souvenir' : 'Passé, sans souvenir' }}
             </span>
-            <span
-              v-if="e.source === 'seed'"
-              class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-slate-500 ring-1 ring-black/10"
-            >
-              Défini dans le code
-            </span>
           </div>
           <h2 class="mt-1 font-display text-[16px] font-bold">{{ e.titre }}</h2>
           <p class="mt-1 max-w-[70ch] text-[13px] text-slate-600">{{ e.resume || e.description }}</p>

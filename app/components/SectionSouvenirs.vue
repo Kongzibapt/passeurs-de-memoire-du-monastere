@@ -53,7 +53,7 @@ const annees = computed(() => souvenirsParAnnee(props.evenements))
               :alt="photo.alt"
               loading="lazy"
               decoding="async"
-              sizes="50vw md:220px"
+              sizes="xs:50vw sm:50vw md:33vw lg:260px xl:260px xxl:260px"
             />
             <figcaption class="cap">
               <b>{{ photo.titre }}</b>

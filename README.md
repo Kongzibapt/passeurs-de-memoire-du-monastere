@@ -86,6 +86,28 @@ Le contenu historique (les trois monuments, la frise, le comparateur) vit dans
 `app/data/` et n'est **pas** éditable depuis le back-office : ce sont des
 notices sourcées, pas de l'actualité.
 
+### `sizes` : préfixer **tous** les points de rupture
+
+Sur un `<NuxtImg>`, l'attribut `sizes` doit préfixer chaque valeur par son point
+de rupture :
+
+```
+sizes="xs:90vw sm:90vw md:90vw lg:50vw xl:560px xxl:560px"   ✅
+sizes="100vw md:50vw lg:560px"                                ❌
+```
+
+La seconde forme est celle que la documentation laisse croire possible, et elle
+produit un `srcset` silencieusement cassé : les deux plus petites variantes
+reçoivent les descripteurs `1w` et `2w` au lieu de `320w` et `640w`. Un
+navigateur ne les choisit alors jamais, et un téléphone télécharge une image
+bien plus large que nécessaire. Rien ne le signale — ni erreur, ni avertissement,
+et l'image s'affiche correctement.
+
+Les valeurs sont mesurées, pas devinées : la largeur réellement occupée par
+chaque image a été relevée de 320 px à 1920 px de fenêtre, puis arrondie vers le
+haut. Demander un peu trop large ne coûte que des octets ; demander trop étroit
+rend l'image floue.
+
 ### Ajouter une photo : passer par `npm run images`
 
 Les photos vont dans `public/img/`, versionnées avec le site. **Après en avoir

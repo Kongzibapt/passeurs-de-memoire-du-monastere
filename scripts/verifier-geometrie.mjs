@@ -1,16 +1,22 @@
 /**
- * Vérifie que le site rendu a EXACTEMENT la géométrie de la maquette.
+ * Vérifie que le site rendu a la géométrie de la maquette, section par section.
  *
- * Un diff d'images ne peut pas trancher : les photos passent ici par AVIF/WebP
- * redimensionnés, donc leurs pixels diffèrent forcément de ceux des JPEG de la
- * maquette, sans qu'aucune règle de mise en page ait bougé. On compare donc ce
- * qui est réellement en jeu : la position et la taille de chaque élément.
+ * ── Pourquoi pas un diff d'images ────────────────────────────────────────────
+ * Les photos passent ici par AVIF redimensionné : leurs pixels diffèrent
+ * forcément de ceux des JPEG de la maquette, sans qu'aucune règle de mise en
+ * page ait bougé. On compare donc ce qui est réellement en jeu — la position et
+ * la taille de chaque élément.
  *
- *   npm run dev                          # dans un terminal
+ * ── Pourquoi section par section ─────────────────────────────────────────────
+ * Les coordonnées sont relevées PAR RAPPORT À LA SECTION, pas au haut de la
+ * page. Sans cela, un seul écart volontaire — une date plus longue, un bloc
+ * ajouté — décale tout ce qui suit et noie les vrais écarts sous des centaines
+ * de faux positifs. Chaque section répond désormais d'elle-même.
+ *
+ *   npm run dev
  *   node scripts/verifier-geometrie.mjs [port]
  *
- * Le repère est le haut de la page : un écart signalé est un vrai écart de mise
- * en page, pas un décalage hérité de la section précédente.
+ * Sortie 0 si aucune section comparée ne diverge.
  */
 import { chromium } from '@playwright/test'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -20,45 +26,99 @@ const ici = dirname(fileURLToPath(import.meta.url))
 const port = process.argv[2] || '3000'
 const MAQUETTE = pathToFileURL(resolve(ici, '..', '..', '..', 'project', 'site') + '/').href
 
-const PAGES = [
-  { nom: 'accueil', maquette: 'index.html', nuxt: '/' },
-  { nom: 'actualites', maquette: 'actualites.html', nuxt: '/actualites' },
-]
-
-/** Tolérance en pixels. Les photos réencodées arrondissent parfois au demi-pixel. */
+/** Tolérance en pixels — les photos réencodées arrondissent parfois au demi-pixel. */
 const TOLERANCE = 1.5
 
 /**
- * Relevé de la géométrie de la page, élément par élément.
+ * Sections volontairement différentes de la maquette, avec leur raison.
  *
- * La clé d'un élément est son chemin de classes depuis la racine, plus son
- * rang : deux documents différents n'ont pas les mêmes identifiants internes,
- * mais ils ont la même structure de classes — c'est ce qui rend les deux
- * relevés comparables.
+ * Elles ne sont pas comparées : elles échoueraient par construction. Cette
+ * liste est le seul endroit où une divergence est admise — si une section y
+ * entre sans raison écrite, c'est qu'on est en train de perdre la maquette de
+ * vue.
  */
-const releve = () => {
-  const sortie = {}
+const DIVERGENCES_ASSUMEES = {
+  'section.sec.pad:has(.evts)':
+    'les dates sont désormais calculées au format « Samedi 21 novembre 2026 », partout',
+  '.passe': 'même format de date que ci-dessus',
+  '.contact@actualites': 'formulaire de contact ajouté à cette page (absent de la maquette)',
+  '.adhere@actualites':
+    'la phrase « Prochain rendez-vous » cite la date au nouveau format, plus longue d\'une ligne',
+  '.foot': 'deux liens légaux ajoutés (mentions légales, données personnelles)',
+}
+
+const PAGES = [
+  {
+    nom: 'accueil',
+    maquette: 'index.html',
+    nuxt: '/',
+    sections: [
+      ['en-tête', '.site-top'],
+      ['hero', '.hero'],
+      ['patrimoine', '#patrimoine'],
+      ['autour', '#autour'],
+      ['comparateur', '.cmp-sec'],
+      ['but', '.but'],
+      ['rivière', '.riviere'],
+      ['archives', '.arch'],
+      ['rendez-vous', 'section.sec.pad:has(.evts)'],
+      ['adhérer', '.adhere'],
+      ['contact', '.contact'],
+      ['devise', '.devise'],
+      ['pied', '.foot'],
+    ],
+  },
+  {
+    nom: 'actualites',
+    maquette: 'actualites.html',
+    nuxt: '/actualites',
+    sections: [
+      ['en-tête', '.site-top'],
+      ['titre de page', '.page-head'],
+      ['à venir', 'section.sec.pad:has(.evts)'],
+      ['souvenirs', '.passe'],
+      ['adhérer', '.adhere@actualites'],
+      ['contact', '.contact@actualites'],
+      ['pied', '.foot'],
+    ],
+  },
+]
+
+/**
+ * Relevé de la géométrie d'une section, élément par élément.
+ *
+ * La clé d'un élément est son chemin de classes plus son rang : deux documents
+ * différents n'ont pas les mêmes identifiants internes, mais ils ont la même
+ * structure de classes — c'est ce qui rend les deux relevés comparables.
+ */
+const releverSection = (selecteur) => {
+  const racine = document.querySelector(selecteur)
+  if (!racine) return null
+
+  const cadre = racine.getBoundingClientRect()
+  const sortie = { '§ la section elle-même': [0, 0, +cadre.width.toFixed(2), +cadre.height.toFixed(2)] }
   const compteurs = {}
-  for (const el of document.querySelectorAll('body *')) {
-    if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE' || el.tagName === 'NOSCRIPT') continue
+
+  for (const el of racine.querySelectorAll('*')) {
+    if (['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(el.tagName)) continue
     const classes = (el.getAttribute('class') || '')
       .split(/\s+/)
       .filter(Boolean)
-      // Classes d'état posées par le JavaScript : elles vont et viennent, et ne
+      // Classes d'état posées par le JavaScript, et classes que vue-router
+      // ajoute au lien de la page courante : elles vont et viennent et ne
       // décrivent pas la structure.
       .filter((c) => !['open', 'on', 'now', 'vis', 'out'].includes(c))
-      // Classes posées par vue-router sur le lien de la page courante : elles
-      // n'existent pas dans la maquette et ne changent rien à la géométrie.
       .filter((c) => !c.startsWith('router-link-'))
       .sort()
       .join('.')
     if (!classes) continue
+
     const cle = `${el.tagName.toLowerCase()}.${classes}`
     compteurs[cle] = (compteurs[cle] ?? 0) + 1
     const r = el.getBoundingClientRect()
     sortie[`${cle}#${compteurs[cle]}`] = [
-      Math.round((r.left + window.scrollX) * 100) / 100,
-      Math.round((r.top + window.scrollY) * 100) / 100,
+      Math.round((r.left - cadre.left) * 100) / 100,
+      Math.round((r.top - cadre.top) * 100) / 100,
       Math.round(r.width * 100) / 100,
       Math.round(r.height * 100) / 100,
     ]
@@ -66,70 +126,105 @@ const releve = () => {
   return sortie
 }
 
+async function ouvrir(navigateur, url, largeur) {
+  const contexte = await navigateur.newContext({
+    viewport: { width: largeur, height: 900 },
+    deviceScaleFactor: 1,
+    reducedMotion: 'reduce',
+  })
+  const onglet = await contexte.newPage()
+  await onglet.goto(url, { waitUntil: 'networkidle' })
+  // Les images en `loading="lazy"` ne partent qu'une fois approchées, et celles
+  // du portage sont transformées à la volée : il faut balayer la page ET
+  // attendre, sans quoi on mesurerait des figures encore vides.
+  await onglet.evaluate(async () => {
+    const pas = window.innerHeight * 0.8
+    for (let y = 0; y < document.body.scrollHeight; y += pas) {
+      window.scrollTo(0, y)
+      await new Promise((r) => setTimeout(r, 120))
+    }
+    window.scrollTo(0, document.body.scrollHeight)
+  })
+  await onglet
+    .waitForFunction(() => [...document.images].every((i) => i.complete && i.naturalWidth > 0), null, {
+      timeout: 60_000,
+    })
+    .catch(() => console.log('    (des images ne se sont pas chargées à temps)'))
+  await onglet.evaluate(() => window.scrollTo(0, 0))
+  await onglet.evaluate(() => new Promise((r) => setTimeout(r, 500)))
+  return { contexte, onglet }
+}
+
 const navigateur = await chromium.launch()
 let anomalies = 0
 
 for (const page of PAGES) {
   for (const largeur of [1440, 430]) {
-    const releves = {}
-    for (const [source, url] of [
-      ['maquette', MAQUETTE + page.maquette],
-      ['nuxt', `http://localhost:${port}${page.nuxt}`],
-    ]) {
-      const contexte = await navigateur.newContext({
-        viewport: { width: largeur, height: 900 },
-        deviceScaleFactor: 1,
-        reducedMotion: 'reduce',
-      })
-      const onglet = await contexte.newPage()
-      await onglet.goto(url, { waitUntil: 'networkidle' })
-      // Les images en `loading="lazy"` ne se chargent qu'une fois approchées, et
-      // celles du portage sont transformées à la volée (AVIF/WebP) : il faut donc
-      // balayer la page ET attendre que chacune ait une taille intrinsèque, sans
-      // quoi on mesurerait des figures encore vides.
-      await onglet.evaluate(async () => {
-        const pas = window.innerHeight * 0.8
-        for (let y = 0; y < document.body.scrollHeight; y += pas) {
-          window.scrollTo(0, y)
-          await new Promise((r) => setTimeout(r, 120))
-        }
-        window.scrollTo(0, 0)
-      })
-      await onglet
-        .waitForFunction(
-          () => [...document.images].every((i) => i.complete && i.naturalWidth > 0),
-          null,
-          { timeout: 60_000 },
-        )
-        .catch(() => console.log('    (des images ne se sont pas chargées à temps)'))
-      await onglet.evaluate(() => new Promise((r) => setTimeout(r, 600)))
-      releves[source] = await onglet.evaluate(releve)
-      await contexte.close()
-    }
+    const maquette = await ouvrir(navigateur, MAQUETTE + page.maquette, largeur)
+    const nuxt = await ouvrir(navigateur, `http://localhost:${port}${page.nuxt}`, largeur)
 
-    const { maquette, nuxt } = releves
-    const ecarts = []
-    for (const [cle, m] of Object.entries(maquette)) {
-      const n = nuxt[cle]
-      if (!n) {
-        ecarts.push(`${cle} — absent du portage`)
+    console.log(`\n${page.nom} — ${largeur} px`)
+
+    for (const [nom, selecteur] of page.sections) {
+      const raison = DIVERGENCES_ASSUMEES[selecteur]
+      // Le suffixe `@page` ne sert qu'à distinguer deux sections de même
+      // sélecteur sur des pages différentes ; le DOM ne le connaît pas.
+      const css = selecteur.split('@')[0]
+
+      if (raison) {
+        console.log(`  ~ ${nom.padEnd(15)} non comparée — ${raison}`)
         continue
       }
+
+      const [m, n] = await Promise.all([
+        maquette.onglet.evaluate(releverSection, css),
+        nuxt.onglet.evaluate(releverSection, css),
+      ])
+
+      if (!m) {
+        console.log(`  · ${nom.padEnd(15)} absente de la maquette`)
+        continue
+      }
+      if (!n) {
+        console.log(`  ✘ ${nom.padEnd(15)} ABSENTE du portage`)
+        anomalies++
+        continue
+      }
+
       const noms = ['x', 'y', 'largeur', 'hauteur']
-      const delta = m
-        .map((v, i) => (Math.abs(v - n[i]) > TOLERANCE ? `${noms[i]} ${v}→${n[i]}` : null))
-        .filter(Boolean)
-      if (delta.length) ecarts.push(`${cle} — ${delta.join(', ')}`)
+      const ecarts = []
+      for (const [cle, a] of Object.entries(m)) {
+        const b = n[cle]
+        if (!b) {
+          ecarts.push(`${cle} — absent`)
+          continue
+        }
+        const delta = a
+          .map((v, i) => (Math.abs(v - b[i]) > TOLERANCE ? `${noms[i]} ${v}→${b[i]}` : null))
+          .filter(Boolean)
+        if (delta.length) ecarts.push(`${cle} — ${delta.join(', ')}`)
+      }
+
+      const total = Object.keys(m).length
+      if (ecarts.length === 0) {
+        console.log(`  ✔ ${nom.padEnd(15)} ${String(total).padStart(3)} éléments`)
+      } else {
+        console.log(`  ✘ ${nom.padEnd(15)} ${String(total).padStart(3)} éléments, ${ecarts.length} écart(s)`)
+        for (const e of ecarts.slice(0, 12)) console.log(`      ${e}`)
+        if (ecarts.length > 12) console.log(`      … et ${ecarts.length - 12} autres`)
+        anomalies += ecarts.length
+      }
     }
 
-    const total = Object.keys(maquette).length
-    const etat = ecarts.length === 0 ? '✔' : '✘'
-    console.log(`${etat} ${page.nom.padEnd(11)} ${String(largeur).padStart(4)}px  ${total} éléments comparés, ${ecarts.length} écart(s)`)
-    for (const e of ecarts.slice(0, 25)) console.log(`    ${e}`)
-    if (ecarts.length > 25) console.log(`    … et ${ecarts.length - 25} autres`)
-    anomalies += ecarts.length
+    await maquette.contexte.close()
+    await nuxt.contexte.close()
   }
 }
 
 await navigateur.close()
+console.log(
+  anomalies === 0
+    ? '\n✔ Toutes les sections comparées sont conformes à la maquette.'
+    : `\n✘ ${anomalies} écart(s) inattendu(s).`,
+)
 process.exit(anomalies === 0 ? 0 : 1)

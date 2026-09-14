@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { aujourdhuiISO, type Evenement, type EtapeProgramme } from '#shared/evenements'
+import {
+  aujourdhuiISO,
+  libelleDate,
+  type Evenement,
+  type EtapeProgramme,
+} from '#shared/evenements'
 
 /**
  * Gestion des événements.
@@ -25,8 +30,6 @@ const vide = (): Evenement => ({
   id: '',
   slug: '',
   date: aujourdhuiISO(),
-  dateCourte: '',
-  dateLongue: '',
   cadre: '',
   titre: '',
   titreAccueil: '',
@@ -80,8 +83,6 @@ function corpsAEnvoyer() {
   return {
     slug: e.slug.trim(),
     date: e.date,
-    dateCourte: e.dateCourte.trim(),
-    dateLongue: e.dateLongue.trim(),
     cadre: e.cadre.trim(),
     titre: e.titre.trim(),
     titreAccueil: e.titreAccueil?.trim() || null,
@@ -186,13 +187,15 @@ const etiquette = 'block text-[11px] font-bold uppercase tracking-[0.12em] text-
           <label :class="etiquette" for="f-date">Date</label>
           <input id="f-date" v-model="brouillon.date" type="date" :class="champ" required>
         </div>
-        <div>
-          <label :class="etiquette" for="f-dc">Date courte (accueil)</label>
-          <input id="f-dc" v-model="brouillon.dateCourte" :class="champ" placeholder="20 sept. 2027">
-        </div>
-        <div>
-          <label :class="etiquette" for="f-dl">Date longue (actualités)</label>
-          <input id="f-dl" v-model="brouillon.dateLongue" :class="champ" placeholder="Samedi 20 septembre 2027">
+        <div class="sm:col-span-2">
+          <span :class="etiquette">Telle qu'elle s'affichera</span>
+          <p class="mt-1 font-accent text-[17px] italic text-clay-700">
+            {{ brouillon.date ? libelleDate(brouillon.date) : '—' }}
+          </p>
+          <p class="mt-1 text-[12px] text-slate-500">
+            Le libellé est calculé depuis la date : il s'écrit pareil sur tout le site, et il n'y a
+            rien à saisir.
+          </p>
         </div>
         <div class="sm:col-span-2">
           <label :class="etiquette" for="f-cadre">Cadre (sous la date)</label>
@@ -308,7 +311,7 @@ const etiquette = 'block text-[11px] font-bold uppercase tracking-[0.12em] text-
       >
         <div class="min-w-0">
           <div class="flex flex-wrap items-center gap-2">
-            <span class="font-accent text-[15px] italic text-clay-700">{{ e.dateLongue || e.date }}</span>
+            <span class="font-accent text-[15px] italic text-clay-700">{{ libelleDate(e.date) }}</span>
             <span
               class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em]"
               :class="e.date >= jour ? 'bg-sage-100 text-sage-700' : 'bg-slate-100 text-slate-600'"

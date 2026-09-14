@@ -59,6 +59,12 @@ une date dépassée, même si plus personne ne s'en occupe pendant six mois. C'e
 la transposition de `evts.js` dans la maquette, qui retirait les dates périmées
 au chargement.
 
+La date affichée n'est pas saisie non plus : elle est calculée depuis la date
+ISO, au format « Samedi 21 novembre 2026 », identique sur l'accueil, la page
+Actualités et les souvenirs. Un libellé écrit à la main finit toujours par
+diverger d'un écran à l'autre, et personne ne s'en aperçoit avant de voir les
+deux côte à côte.
+
 ---
 
 ## Contenu : le code d'abord, la base ensuite
@@ -107,6 +113,18 @@ Les valeurs sont mesurées, pas devinées : la largeur réellement occupée par
 chaque image a été relevée de 320 px à 1920 px de fenêtre, puis arrondie vers le
 haut. Demander un peu trop large ne coûte que des octets ; demander trop étroit
 rend l'image floue.
+
+### Affiches d'événement
+
+Les affiches sont dessinées en HTML dans le bundle Claude Design, une planche
+par `<section class="page">`. `node scripts/exporter-affiches.mjs` rend la
+première planche de chacune et l'écrit dans `public/img/`, en masquant au
+passage les mentions de travail en cours (« Lieu et horaires à confirmer »),
+qui n'ont plus lieu d'être une fois l'événement passé.
+
+Une photo de souvenir marquée `affiche: true` garde ses proportions A4 au lieu
+du cadrage 4/3 de la charte : appliqué à une affiche, ce cadrage en couperait le
+titre et la date, c'est-à-dire tout ce qu'elle sert à dire.
 
 ### Ajouter une photo : passer par `npm run images`
 
@@ -228,14 +246,21 @@ node scripts/verifier-geometrie.mjs   # compare la position et la taille de chaq
 node scripts/comparer-maquette.mjs    # captures côte à côte dans .captures/
 ```
 
-`verifier-geometrie.mjs` compare 196 éléments par page, à 1440 px et à 430 px.
-Un diff d'images ne pourrait pas trancher — les photos passent ici par AVIF
-redimensionné, donc leurs pixels diffèrent forcément de ceux des JPEG de la
-maquette sans qu'aucune règle de mise en page ait bougé.
+`verifier-geometrie.mjs` compare la position et la taille de chaque élément,
+**section par section**, à 1440 px et à 430 px. Un diff d'images ne pourrait pas
+trancher — les photos passent ici par AVIF redimensionné, donc leurs pixels
+diffèrent forcément de ceux des JPEG de la maquette sans qu'aucune règle de mise
+en page ait bougé.
 
-**Un seul écart subsiste, volontaire** : la colonne « Le site » du pied de page
-porte deux liens de plus (Mentions légales, Données personnelles). Ils ne
-changent pas la hauteur du pied sur bureau.
+Les coordonnées sont relevées par rapport à la section, pas au haut de la page :
+sans cela, un seul écart volontaire décale tout ce qui suit et noie les vrais
+écarts sous des centaines de faux positifs.
+
+Les sections qui s'écartent volontairement de la maquette sont listées dans
+`DIVERGENCES_ASSUMEES`, **avec leur raison**, en tête du script : c'est le seul
+endroit où une divergence est admise. Aujourd'hui ce sont le format de date
+unifié, le formulaire de contact ajouté à la page Actualités, et les deux liens
+légaux du pied de page. Tout le reste doit correspondre au pixel.
 
 ---
 

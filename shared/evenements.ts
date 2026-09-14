@@ -33,6 +33,13 @@ export interface PhotoSouvenir {
   titre: string
   /** Crédit affiché sous le titre. */
   credit?: string
+  /**
+   * Vrai pour une affiche d'événement. La charte cadre les photos en 4/3 ;
+   * appliqué à une affiche A4, ce cadrage en couperait le titre et la date —
+   * c'est-à-dire tout ce qu'elle sert à dire. Une affiche garde donc ses
+   * proportions, et rien n'en est rogné.
+   */
+  affiche?: boolean
 }
 
 export interface Souvenir {
@@ -76,12 +83,13 @@ export interface Evenement {
   /** `seed:<slug>` pour le contenu du code, uuid pour la base. */
   id: string
   slug: string
-  /** Date de l'événement (ISO `YYYY-MM-DD`) — pilote le basculement à venir / passé. */
+  /**
+   * Date de l'événement (ISO `YYYY-MM-DD`). Elle fait tout : elle décide du
+   * basculement à venir / souvenir, et c'est d'elle qu'est tiré le libellé
+   * affiché (voir `libelleDate`). Rien n'est saisi à la main, donc rien ne peut
+   * diverger d'un écran à l'autre.
+   */
   date: string
-  /** Date affichée sur l'accueil, compacte : « 20 sept. 2026 ». */
-  dateCourte: string
-  /** Date affichée sur la page Actualités : « Samedi 21 novembre 2026 ». */
-  dateLongue: string
   /** Surtitre sous la date : lieu ou cadre national de l'événement. */
   cadre: string
   titre: string
@@ -97,6 +105,41 @@ export interface Evenement {
   /** Bloc « souvenir », affiché une fois la date passée. */
   souvenir?: Souvenir
   source: 'seed' | 'db'
+}
+
+/**
+ * Met une date ISO en français : « Samedi 21 novembre 2026 ».
+ *
+ * Un seul format pour tout le site — accueil, page Actualités et souvenirs.
+ * Le calculer plutôt que le saisir est ce qui garantit qu'il le reste : un
+ * libellé écrit à la main finit toujours par diverger d'un écran à l'autre, et
+ * personne ne s'en aperçoit avant de voir les deux côte à côte.
+ *
+ * La date est lue en UTC de bout en bout. `new Date('2026-11-21')` est minuit
+ * UTC ; l'interpréter dans un fuseau à l'ouest reculerait l'affichage d'un jour,
+ * et un rendez-vous s'annoncerait la veille pour un visiteur en voyage.
+ */
+export function libelleDate(iso: string): string {
+  const [annee, mois, jour] = iso.split('-').map(Number)
+  if (!annee || !mois || !jour) return iso
+
+  const parties = new Intl.DateTimeFormat('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).formatToParts(new Date(Date.UTC(annee, mois - 1, jour)))
+
+  const texte = parties
+    .map((p) =>
+      // Le français ordinalise le premier jour du mois, et lui seul :
+      // « 1er janvier », mais « 2 janvier ».
+      p.type === 'day' && p.value === '1' ? '1er' : p.value,
+    )
+    .join('')
+
+  return texte.charAt(0).toUpperCase() + texte.slice(1)
 }
 
 /** Date du jour au format ISO court, en heure de Paris. */
@@ -141,8 +184,6 @@ export const SEED_EVENEMENTS: Evenement[] = [
     id: 'seed:nuit-des-eglises-2026',
     slug: 'nuit-des-eglises-2026',
     date: '2026-07-03',
-    dateCourte: '3 juil. 2026',
-    dateLongue: '3 juillet 2026',
     cadre: "Nuit des églises",
     titre: 'Nuit des églises',
     resume:
@@ -155,6 +196,13 @@ export const SEED_EVENEMENTS: Evenement[] = [
         "Une soirée dans l'église du village : un concert, le drap mortuaire des tanneurs sorti des réserves, et une micro-conférence sur l'art sacré.",
       question: 'Que faisait un drap mortuaire dans une confrérie de tanneurs ?',
       photos: [
+        {
+          src: '/img/affiche-nuit-des-eglises-2026.jpg',
+          alt: "Affiche de la Nuit des églises 2026 : concert orgue, flûte traversière et chant à l'église Saint-Blaise du Monastère, le 3 juillet à 20h30, entrée libre",
+          titre: "L'affiche de la soirée",
+          credit: "Affiche de l'association",
+          affiche: true,
+        },
         {
           src: '/img/eglise-nef.jpg',
           alt: "L'église du Monastère pleine, lors de la Nuit des églises",
@@ -182,8 +230,6 @@ export const SEED_EVENEMENTS: Evenement[] = [
     id: 'seed:journee-des-associations-2026',
     slug: 'journee-des-associations-2026',
     date: '2026-08-29',
-    dateCourte: '29 août 2026',
-    dateLongue: '29 août 2026',
     cadre: 'Le Monastère',
     titre: 'Journée des associations',
     resume:
@@ -195,7 +241,15 @@ export const SEED_EVENEMENTS: Evenement[] = [
     souvenir: {
       recit:
         "Un stand aux côtés des associations de la commune : rencontres, questions du village, présentation des quatre commissions et premières adhésions signées sur place.",
-      photos: [],
+      photos: [
+        {
+          src: '/img/affiche-journee-des-associations-2026.jpg',
+          alt: "Affiche de la Journée des associations du 29 août 2026 au Monastère, sur fond du pont Vieux et de l'Aveyron",
+          titre: "L'affiche du stand",
+          credit: "Affiche de l'association",
+          affiche: true,
+        },
+      ],
       cta: {
         label: 'Vous avez des photos de la journée ?',
         href: 'mailto:?sujet=Photos journée des associations',
@@ -208,8 +262,6 @@ export const SEED_EVENEMENTS: Evenement[] = [
     id: 'seed:journees-du-patrimoine-2026',
     slug: 'journees-du-patrimoine-2026',
     date: '2026-09-20',
-    dateCourte: '20 sept. 2026',
-    dateLongue: '20 sept. 2026',
     cadre: 'Journées européennes du patrimoine',
     titre: 'Balade découverte du patrimoine du Monastère',
     titreAccueil: 'Balade découverte du patrimoine',
@@ -229,8 +281,6 @@ export const SEED_EVENEMENTS: Evenement[] = [
     id: 'seed:rencontres-patrimoine-2026',
     slug: 'rencontres-patrimoine-2026',
     date: '2026-11-21',
-    dateCourte: '21 nov. 2026',
-    dateLongue: 'Samedi 21 novembre 2026',
     cadre: 'Rencontres Patrimoine',
     titre: "Le Monastère : du bourg ancien aux quartiers d'aujourd'hui",
     resume:

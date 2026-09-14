@@ -168,6 +168,22 @@
     cursor: not-allowed;
   }
 
+  /* Affiches d'événement dans « C'était chez nous ».
+
+     La charte cadre les photos de souvenir en 4/3 (`.pe-ph img`), ce qui
+     convient à un cliché mais décapite une affiche : le titre et la date sont
+     en haut, et c'est précisément ce que le recadrage emporte. Une affiche
+     garde donc ses proportions A4 et se voit en entier.
+
+     `align-self: start` empêche l'affiche, plus haute que ses voisines, d'être
+     étirée à la hauteur de la rangée. */
+  .pe-ph figure.affiche {
+    align-self: start;
+  }
+  .pe-ph figure.affiche img {
+    aspect-ratio: 1 / 1.414;
+  }
+
   /* Pages de texte (mentions légales, confidentialité). */
   .prose-legal {
     max-width: 70ch;

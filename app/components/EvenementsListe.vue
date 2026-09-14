@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { aVenir, estLienExterne, hrefCta, type Evenement } from '#shared/evenements'
+import { aVenir, estLienExterne, hrefCta, libelleDate, type Evenement } from '#shared/evenements'
 
 /**
  * La liste des rendez-vous à venir, dans ses deux tenues.
  *
  * - `accueil` : titre court, résumé, et un unique bouton « Détails » vers la
- *   page Actualités. C'est un aperçu, pas la page.
+ *   page Actualités. C'est un aperçu, pas la page. La date, elle, s'écrit
+ *   pareil partout : elle est calculée, jamais saisie.
  * - `actualites` : titre complet, présentation détaillée, programme horaire
  *   quand il y en a un, et le bouton propre à l'événement.
  *
@@ -36,7 +37,7 @@ const liste = computed(() => {
     <template v-if="liste.length">
       <article v-for="e in liste" :key="e.id" class="evt">
         <div class="when">
-          {{ variante === 'accueil' ? e.dateCourte : e.dateLongue }}
+          {{ libelleDate(e.date) }}
           <small>{{ e.cadre }}</small>
         </div>
 

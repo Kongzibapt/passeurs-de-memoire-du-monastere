@@ -52,7 +52,11 @@ async function soumettre() {
       </p>
     </div>
 
-    <form class="cform" novalidate @submit.prevent="soumettre">
+    <!-- Pas de `novalidate` : le navigateur bloque l'envoi d'un champ obligatoire
+         resté vide et le signale sur place, dans la langue du visiteur. Sans
+         lui, un champ oublié partait jusqu'au serveur pour revenir en erreur —
+         un aller-retour pour dire ce qui se voyait déjà à l'écran. -->
+    <form class="cform" @submit.prevent="soumettre">
       <div class="field">
         <label for="nom">Nom et prénom</label>
         <input id="nom" v-model="formulaire.nom" type="text" name="nom" autocomplete="name" required>

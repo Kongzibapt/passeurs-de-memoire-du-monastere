@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { aVenir } from '#shared/evenements'
+import { aVenir, libelleDate } from '#shared/evenements'
 import { filAriane } from '~/utils/structuredData'
 
 /**
@@ -22,7 +22,7 @@ const prochains = computed(() => aVenir(evenements.value))
 const prochainRendezVous = computed(() => {
   const suivant = prochains.value[0]
   return suivant
-    ? `Prochain rendez-vous : ${suivant.titre.toLowerCase()}, le ${suivant.dateLongue.toLowerCase()}.`
+    ? `Prochain rendez-vous : ${suivant.titre.toLowerCase()}, ${libelleDate(suivant.date).toLowerCase()}.`
     : 'Les prochaines dates sont en préparation : écrivez-nous pour être prévenu.'
 })
 
@@ -79,6 +79,12 @@ useHead({
           <p>{{ prochainRendezVous }}</p>
         </div>
       </SectionAdherer>
+
+      <!-- Le formulaire est aussi ici, et pas seulement sur l'accueil : c'est
+           en lisant les rendez-vous passés qu'on se souvient d'une photo ou
+           d'une histoire à raconter. Faire revenir le visiteur sur l'accueil
+           pour écrire, c'est le perdre en chemin. -->
+      <SectionContact />
     </main>
 
     <SiteFooter />

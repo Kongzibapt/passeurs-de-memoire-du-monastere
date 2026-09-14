@@ -7,13 +7,21 @@ import { allerA } from './helpers'
  * ces tests couvrent donc autant le refus propre que l'envoi réussi.
  */
 test.describe('Formulaire de contact', () => {
-  test('refuse un envoi incomplet sans rien casser', async ({ page }) => {
+  test('un champ obligatoire vide bloque l’envoi sur place', async ({ page }) => {
     await allerA(page)
     await page.locator('#contact-form').scrollIntoViewIfNeeded()
+
+    // Aucune requête ne doit partir : le navigateur arrête l'envoi lui-même.
+    let appels = 0
+    await page.route('**/api/contact', (route) => {
+      appels++
+      return route.abort()
+    })
+
     await page.locator('.cform button[type=submit]').click()
-    // Le serveur n'est pas appelé : rien ne part, et le formulaire reste là.
+    await expect(page.locator('#nom')).toBeFocused()
     await expect(page.locator('.cform .retour')).toHaveCount(0)
-    await expect(page.locator('#nom')).toBeVisible()
+    expect(appels).toBe(0)
   })
 
   test('affiche un retour après une tentative d’envoi', async ({ page }) => {

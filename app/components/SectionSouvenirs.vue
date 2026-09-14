@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { estLienExterne, hrefCta, souvenirsParAnnee, type Evenement } from '#shared/evenements'
+import {
+  estLienExterne,
+  hrefCta,
+  libelleDate,
+  souvenirsParAnnee,
+  type Evenement,
+} from '#shared/evenements'
 
 /**
  * « C'était chez nous » — les événements passés, groupés par année.
@@ -31,7 +37,7 @@ const annees = computed(() => souvenirsParAnnee(props.evenements))
         :class="{ solo: !e.souvenir?.photos.length }"
       >
         <div class="pe-t">
-          <div class="d">{{ e.dateLongue }}</div>
+          <div class="d">{{ libelleDate(e.date) }}</div>
           <h3>{{ e.titre }}</h3>
           <p>{{ e.souvenir?.recit }}</p>
           <div v-if="e.souvenir?.question" class="q">{{ e.souvenir.question }}</div>
@@ -47,7 +53,7 @@ const annees = computed(() => souvenirsParAnnee(props.evenements))
         </div>
 
         <div v-if="e.souvenir?.photos.length" class="pe-ph">
-          <figure v-for="photo in e.souvenir.photos" :key="photo.src">
+          <figure v-for="photo in e.souvenir.photos" :key="photo.src" :class="{ affiche: photo.affiche }">
             <NuxtImg
               :src="photo.src"
               :alt="photo.alt"

@@ -17,13 +17,12 @@ create table if not exists public.evenements (
   updated_at    timestamptz not null default now(),
 
   slug          text not null unique,
-  date          date not null,
 
-  -- Deux graphies de la même date : compacte sur l'accueil (« 20 sept. 2026 »),
-  -- longue sur la page Actualités (« Samedi 21 novembre 2026 »). Ce sont des
-  -- textes libres parce que l'association les écrit comme elle les dit.
-  date_courte   text,
-  date_longue   text,
+  -- La date fait tout : elle décide du basculement à venir / souvenir, et c'est
+  -- d'elle qu'est tiré le libellé affiché (« Samedi 21 novembre 2026 »). Aucun
+  -- libellé n'est stocké — un texte saisi à la main finit toujours par diverger
+  -- d'un écran à l'autre.
+  date          date not null,
 
   cadre         text,           -- surtitre : lieu, ou cadre national de l'événement
   titre         text not null,
@@ -60,5 +59,11 @@ drop trigger if exists evenements_touch on public.evenements;
 create trigger evenements_touch
   before update on public.evenements
   for each row execute function public.touch_updated_at();
+
+-- Bases créées avant le passage au libellé calculé : les deux colonnes de
+-- texte ne servent plus. `if exists` rend la ligne sans effet sur une base
+-- neuve, et rejouable sans risque sur une base existante.
+alter table public.evenements drop column if exists date_courte;
+alter table public.evenements drop column if exists date_longue;
 
 alter table public.evenements enable row level security;

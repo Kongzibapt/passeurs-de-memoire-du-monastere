@@ -28,8 +28,6 @@ interface EvenementRow {
   id: string
   slug: string
   date: string | null
-  date_courte: string | null
-  date_longue: string | null
   cadre: string | null
   titre: string
   titre_accueil: string | null
@@ -45,8 +43,6 @@ function mapRow(r: EvenementRow): Evenement {
     id: r.id,
     slug: r.slug,
     date: (r.date ?? '').slice(0, 10),
-    dateCourte: r.date_courte ?? '',
-    dateLongue: r.date_longue ?? '',
     cadre: r.cadre ?? '',
     titre: r.titre,
     titreAccueil: r.titre_accueil ?? undefined,
@@ -75,8 +71,6 @@ function normaliserSouvenir(s: Souvenir | null): Souvenir | undefined {
 export interface EvenementInput {
   slug: string
   date?: string
-  dateCourte?: string
-  dateLongue?: string
   cadre?: string
   titre?: string
   titreAccueil?: string | null
@@ -92,8 +86,6 @@ export function versLigneEvenement(input: EvenementInput): Record<string, unknow
   const p: Record<string, unknown> = {}
   if (input.slug !== undefined) p.slug = input.slug
   if (input.date !== undefined) p.date = input.date || null
-  if (input.dateCourte !== undefined) p.date_courte = input.dateCourte
-  if (input.dateLongue !== undefined) p.date_longue = input.dateLongue
   if (input.cadre !== undefined) p.cadre = input.cadre
   if (input.titre !== undefined) p.titre = input.titre
   if (input.titreAccueil !== undefined) p.titre_accueil = input.titreAccueil || null

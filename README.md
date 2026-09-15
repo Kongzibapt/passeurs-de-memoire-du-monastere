@@ -22,6 +22,7 @@ npm run dev               # http://localhost:3000
 | `npm run build` | build de production (Nitro) |
 | `npm run preview` | sert le build localement |
 | `npm run images` | remet d'aplomb et redimensionne les photos ajoutées |
+| `npm run phototheque` | réinventorie `public/img/` pour le back-office |
 | `npm run typecheck` | vérification TypeScript (`vue-tsc`) |
 | `npm test` | suite end-to-end Playwright |
 | `npm run test:ui` | la même, en mode pas à pas |
@@ -136,9 +137,10 @@ première planche de chacune et l'écrit dans `public/img/`, en masquant au
 passage les mentions de travail en cours (« Lieu et horaires à confirmer »),
 qui n'ont plus lieu d'être une fois l'événement passé.
 
-Une photo de souvenir marquée `affiche: true` garde ses proportions A4 au lieu
-du cadrage 4/3 de la charte : appliqué à une affiche, ce cadrage en couperait le
-titre et la date, c'est-à-dire tout ce qu'elle sert à dire.
+Une affiche n'a plus besoin d'être signalée comme telle : le carrousel décrit
+plus haut pose chaque image entière dans un cadre carré, et garde donc ses
+proportions A4 — avec son titre et sa date, c'est-à-dire tout ce qu'elle sert à
+dire.
 
 ### Ajouter une photo : passer par `npm run images`
 
@@ -160,11 +162,42 @@ ce qui en a besoin : le relancer ne dégrade rien.
 npm run images -- --test   # signale sans modifier — utile en revue
 ```
 
+Puis `npm run phototheque`, pour que l'image apparaisse dans le sélecteur du
+back-office — voir ci-dessous.
+
+### La photothèque : pourquoi un inventaire écrit dans le code
+
+Le back-office propose les images de `public/img/` dans une planche, au lieu de
+demander qu'on tape « /img/eglise-nef.jpg » de mémoire. Il lui faut donc la
+liste du dossier.
+
+On pourrait le lister à chaque requête — c'est ce qu'on fait en développement
+sans y penser. Mais **en production la fonction serveur ne voit pas `public/`** :
+Vercel sert ces fichiers depuis son CDN, et un `readdir` renverrait une liste
+vide. La photothèque marcherait en local et serait désespérément vide en ligne.
+
+L'inventaire est donc dressé à la construction, où le dossier est bien là, et
+figé dans `shared/phototheque-fichiers.ts` — un module TypeScript ordinaire,
+versionné : un diff montre les images ajoutées ou retirées.
+
+```bash
+npm run phototheque   # après avoir déposé des images ; `npm run build` le fait seul
+```
+
+Les **légendes** se répartissent en trois couches, de la plus forte à la plus
+faible : la table Supabase `phototheque` (saisie au back-office), les légendes
+écrites dans `shared/phototheque.ts` (reprises des pages qui affichent déjà ces
+images), et un titre déduit du nom de fichier. Une image que personne n'a
+décrite reste donc proposée — le fonds ne se cache pas parce qu'il n'est pas
+encore légendé — mais la page `/admin/phototheque` compte en tête celles qui
+n'ont pas de texte alternatif, la seule chose que lira quelqu'un qui ne voit pas
+l'écran.
+
 ---
 
 ## Back-office `/admin`
 
-Trois écrans : **Événements**, **Archives**, **Réglages**.
+Quatre écrans : **Événements**, **Archives**, **Photothèque**, **Réglages**.
 
 L'accès tient à un mot de passe unique partagé (`ADMIN_PASSWORD`). Le cookie de
 session ne contient pas ce mot de passe mais un HMAC qui en dérive : le changer
@@ -180,7 +213,7 @@ retiré des statistiques de fréquentation (voir `app/plugins/vercel.client.ts`)
 ### Base de données
 
 Les **lectures** se passent de Supabase. Les **écritures** en ont besoin : jouer
-une fois chacun des quatre fichiers de [`supabase/`](./supabase) dans l'éditeur
+une fois chacun des cinq fichiers de [`supabase/`](./supabase) dans l'éditeur
 SQL du projet. Le back-office dit explicitement quelle table manque le cas
 échéant.
 

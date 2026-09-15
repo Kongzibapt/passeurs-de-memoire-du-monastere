@@ -14,7 +14,7 @@ test.describe('Back-office', () => {
   })
 
   test('les sous-pages renvoient vers la connexion', async ({ page }) => {
-    for (const chemin of ['/admin/evenements', '/admin/archives', '/admin/reglages']) {
+    for (const chemin of ['/admin/evenements', '/admin/archives', '/admin/phototheque', '/admin/reglages']) {
       await page.goto(chemin)
       await expect(page).toHaveURL(/\/admin$/)
     }
@@ -24,9 +24,11 @@ test.describe('Back-office', () => {
     const appels = [
       page.request.get('/api/admin/evenements'),
       page.request.get('/api/admin/archives'),
+      page.request.get('/api/admin/phototheque'),
       page.request.post('/api/admin/evenements', { data: { slug: 'x', titre: 'x', date: '2030-01-01' } }),
       page.request.post('/api/admin/archives', { data: { src: '/x.jpg', titre: 'x' } }),
       page.request.patch('/api/admin/reglages', { data: { url_adhesion: 'https://helloasso.com/x' } }),
+      page.request.patch('/api/admin/phototheque', { data: { src: '/img/abbaye.jpg', titre: 'x' } }),
       page.request.delete('/api/admin/evenements/quelconque'),
     ]
     for (const reponse of await Promise.all(appels)) {

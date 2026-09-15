@@ -56,6 +56,12 @@ async function seDeconnecter() {
             Archives
           </NuxtLink>
           <NuxtLink
+            to="/admin/phototheque"
+            class="hidden text-[13px] font-medium text-white/70 transition-colors hover:text-white sm:block"
+          >
+            Photothèque
+          </NuxtLink>
+          <NuxtLink
             to="/admin/reglages"
             class="hidden text-[13px] font-medium text-white/70 transition-colors hover:text-white sm:block"
           >

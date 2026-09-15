@@ -50,6 +50,12 @@ const outils = [
       'Ajouter au fonds les cartes postales et photographies retrouvées, avec leur légende et leur provenance.',
   },
   {
+    to: '/admin/phototheque',
+    titre: 'Photothèque',
+    texte:
+      "Toutes les images du site, avec leur titre, leur crédit et leur description. C'est là qu'on les choisit pour un événement ou une archive, plutôt que d'en taper le chemin de mémoire.",
+  },
+  {
     to: '/admin/reglages',
     titre: 'Réglages',
     texte:

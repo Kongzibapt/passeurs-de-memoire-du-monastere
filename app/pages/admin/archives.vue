@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Archive } from '#shared/archives'
+import type { Image } from '#shared/phototheque'
 
 /**
  * Gestion du fonds d'archives.
@@ -24,6 +25,23 @@ const edition = ref(false)
 const message = ref('')
 const erreur = ref('')
 const enregistrement = ref(false)
+
+/**
+ * L'image se choisit dans la photothèque, et arrive avec son texte alternatif.
+ *
+ * Le chemin reste saisissable à côté : un document tout juste déposé dans
+ * `public/img/` n'entre dans la planche qu'après `npm run phototheque`, et on
+ * doit pouvoir le référencer sans attendre.
+ */
+const selecteurOuvert = ref(false)
+
+function choisirImage(images: Image[]) {
+  const image = images[0]
+  if (!image) return
+  brouillon.value.src = image.src
+  if (!brouillon.value.alt.trim()) brouillon.value.alt = image.alt
+  if (!brouillon.value.titre.trim()) brouillon.value.titre = image.titre
+}
 
 function nouveau() {
   brouillon.value = vide()
@@ -115,16 +133,40 @@ const etiquette = 'block text-[11px] font-bold uppercase tracking-[0.12em] text-
     <form v-if="edition" class="mt-7 border border-black/10 bg-white p-6" @submit.prevent="enregistrer">
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="sm:col-span-2">
-          <label :class="etiquette" for="a-src">Chemin de l'image</label>
-          <input id="a-src" v-model="brouillon.src" :class="champ" required placeholder="/img/archive-pont.jpg">
+          <span :class="etiquette">Image</span>
+          <div class="mt-1 flex flex-wrap items-start gap-3">
+            <img
+              v-if="brouillon.src"
+              :src="brouillon.src"
+              :alt="brouillon.alt"
+              class="h-16.5 w-22 rounded border border-black/10 bg-slate-100 object-cover"
+            >
+            <button
+              type="button"
+              class="border border-black/15 px-3 py-2 text-[13px] font-semibold text-clay-700 transition-colors hover:bg-clay-50"
+              @click="selecteurOuvert = true"
+            >
+              {{ brouillon.src ? "Changer d'image" : 'Choisir dans la photothèque' }}
+            </button>
+            <input
+              id="a-src"
+              v-model="brouillon.src"
+              :class="champ"
+              required
+              placeholder="/img/archive-pont.jpg"
+              class="min-w-55 flex-1"
+            >
+          </div>
           <p class="mt-1 text-[12px] leading-relaxed text-slate-500">
-            Déposer le fichier dans <code class="font-mono">public/img/</code> du dépôt, puis
-            indiquer ici son chemin depuis la racine du site. Après l'avoir déposé, lancer
-            <code class="font-mono">npm run images</code> : une photo prise à la verticale
+            Pour ajouter une image au fonds : déposer le fichier dans
+            <code class="font-mono">public/img/</code> du dépôt, lancer
+            <code class="font-mono">npm run images</code> — une photo prise à la verticale
             s'affiche droite sur l'ordinateur mais couchée sur le site tant qu'on ne l'a pas
-            redressée pour de bon.
+            redressée pour de bon — puis <code class="font-mono">npm run phototheque</code> pour
+            qu'elle apparaisse dans la planche ci-dessus.
           </p>
         </div>
+
         <div>
           <label :class="etiquette" for="a-titre">Titre (en gras dans la légende)</label>
           <input id="a-titre" v-model="brouillon.titre" :class="champ" required>
@@ -149,6 +191,8 @@ const etiquette = 'block text-[11px] font-bold uppercase tracking-[0.12em] text-
           </p>
         </div>
       </div>
+
+      <AdminSelecteurPhoto v-model:ouvert="selecteurOuvert" @choisir="choisirImage" />
 
       <div class="mt-7 flex flex-wrap gap-3 border-t border-black/10 pt-6">
         <button

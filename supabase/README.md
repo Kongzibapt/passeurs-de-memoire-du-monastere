@@ -1,12 +1,21 @@
 # Base Supabase — Les Passeurs de Mémoire du Monastère
 
-Quatre fichiers, à jouer **une fois chacun** dans l'éditeur SQL du projet
+Cinq fichiers, à jouer **une fois chacun** dans l'éditeur SQL du projet
 Supabase (*SQL Editor → New query → coller → Run*), dans cet ordre :
 
 1. `contact.sql` — archivage des messages du formulaire de contact
 2. `evenements.sql` — les rendez-vous et leurs souvenirs
 3. `archives.sql` — le fonds de cartes postales et photographies
-4. `reglages.sql` — les quelques valeurs éditables (lien HelloAsso)
+4. `phototheque.sql` — les légendes des images de `public/img/`
+5. `reglages.sql` — les quelques valeurs éditables (lien HelloAsso)
+
+## Aucune image n'est stockée dans Supabase
+
+Les fichiers vivent dans `public/img/`, versionnés avec le site : une carte
+postale est un objet qu'on conserve, et la mettre dans le dépôt la met à l'abri
+d'un compte de stockage fermé. `phototheque.sql` ne porte que ce qui se DIT
+d'une image — titre, texte alternatif, crédit, mots-clés — c'est-à-dire ce qui
+peut changer sans redéployer.
 
 ## Pourquoi aucune table n'a de politique publique
 

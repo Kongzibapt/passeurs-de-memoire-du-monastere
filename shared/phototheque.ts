@@ -146,6 +146,12 @@ export const LEGENDES: Record<string, LegendeImage> = {
     credit: ASSOCIATION,
     motsCles: ['bourg', 'coteau', 'pins', 'panorama'],
   },
+  '/img/bureau-membres.jpg': {
+    titre: "Le Bureau et les membres de l'association",
+    alt: "Une vingtaine de membres de l'association réunis debout dans une salle, devant un écran de projection",
+    credit: ASSOCIATION,
+    motsCles: ['bureau', 'membres', 'équipe', 'association', 'groupe'],
+  },
   '/img/concert-tribune.jpg': {
     titre: "Le concert, à la tribune d'orgue",
     alt: "Les musiciens du concert à la tribune d'orgue de l'église du Monastère",

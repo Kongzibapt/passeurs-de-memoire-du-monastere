@@ -27,6 +27,7 @@ export const FICHIERS_IMAGES: FichierImage[] = [
   { src: '/img/archive-vue-aerienne.jpg', largeur: 1400, hauteur: 952, octets: 287438 },
   { src: '/img/archive-vue-generale.jpg', largeur: 903, hauteur: 1400, octets: 283867 },
   { src: '/img/bourg-coteau-pins.jpg', largeur: 1920, hauteur: 960, octets: 530701 },
+  { src: '/img/bureau-membres.jpg', largeur: 885, hauteur: 500, octets: 136437 },
   { src: '/img/concert-tribune.jpg', largeur: 1800, hauteur: 852, octets: 195649 },
   { src: '/img/conference-art-sacre.jpg', largeur: 1800, hauteur: 3804, octets: 1378840 },
   { src: '/img/eglise-2026.jpg', largeur: 1920, hauteur: 2880, octets: 456052 },

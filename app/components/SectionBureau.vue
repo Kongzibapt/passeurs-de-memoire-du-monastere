@@ -30,28 +30,30 @@ const BUREAU = [
         garder la mémoire et la partager.
       </p>
     </div>
-    <figure class="bureau-photo">
-      <NuxtImg
-        :src="SRC"
-        :alt="photo.alt"
-        width="885"
-        height="500"
-        loading="lazy"
-        decoding="async"
-        sizes="xs:100vw sm:100vw md:100vw lg:720px xl:720px xxl:720px"
-      />
-      <figcaption class="cap">
-        <b>{{ photo.titre }}</b> {{ photo.credit }}
-      </figcaption>
-    </figure>
-    <div class="composition">
-      <h3>Composition du Bureau</h3>
-      <dl>
-        <div v-for="m in BUREAU" :key="m.role">
-          <dt>{{ m.role }}</dt>
-          <dd>{{ m.noms }}</dd>
-        </div>
-      </dl>
+    <div class="bureau-layout">
+      <figure class="bureau-photo">
+        <NuxtImg
+          :src="SRC"
+          :alt="photo.alt"
+          width="885"
+          height="500"
+          loading="lazy"
+          decoding="async"
+          sizes="xs:100vw sm:100vw md:100vw lg:720px xl:720px xxl:720px"
+        />
+        <figcaption class="cap">
+          <b>{{ photo.titre }}</b> {{ photo.credit }}
+        </figcaption>
+      </figure>
+      <div class="composition">
+        <h3>Composition du Bureau</h3>
+        <dl>
+          <div v-for="m in BUREAU" :key="m.role">
+            <dt>{{ m.role }}</dt>
+            <dd>{{ m.noms }}</dd>
+          </div>
+        </dl>
+      </div>
     </div>
   </section>
 </template>
@@ -60,10 +62,19 @@ const BUREAU = [
 /* La photo source fait 885 px de large : on la garde en deçà, à l'échelle du texte. */
 .bureau-photo {
   margin: 0;
-  max-width: 720px;
+  flex: 0 1 720px;
+  min-width: 0;
+}
+/* La composition se place à droite de la photo quand la largeur le permet, sinon elle passe dessous. */
+.bureau-layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 2rem;
 }
 .composition {
-  margin-top: 2rem;
+  flex: 1 1 18rem;
+  container-type: inline-size;
 }
 .composition dl {
   margin: 0;
@@ -75,8 +86,12 @@ const BUREAU = [
   padding: 0.5rem 0;
 }
 .composition dt {
-  min-width: 11rem;
   font-weight: 600;
+}
+@container (min-width: 26rem) {
+  .composition dt {
+    min-width: 11rem;
+  }
 }
 .composition dd {
   margin: 0;

@@ -12,7 +12,10 @@ import { formatAccepte } from '~/composables/usePhototheque'
  * `deposees`, et la page ou le sélecteur décide (ouvrir la fiche, retenir les
  * images pour l'événement en cours…).
  */
-defineProps<{ compact?: boolean }>()
+const props = withDefaults(defineProps<{ compact?: boolean; multiple?: boolean }>(), {
+  compact: false,
+  multiple: true,
+})
 const emit = defineEmits<{ deposees: [images: Image[]] }>()
 
 const { deposer } = usePhototheque()
@@ -28,7 +31,7 @@ async function traiter(fichiers: File[]) {
   const faites: Image[] = []
   for (const f of fichiers) {
     if (!formatAccepte(f)) {
-      echecs.value.push(`« ${f.name} » : format non pris en charge (JPEG, PNG ou WebP).`)
+      echecs.value.push(`« ${f.name} » n'est pas une photo que le site sait lire (il faut du JPEG, PNG ou WebP).`)
       continue
     }
     enCours.value = [...enCours.value, f.name]
@@ -45,13 +48,14 @@ async function traiter(fichiers: File[]) {
 
 function messageDe(e: unknown, nom: string): string {
   const err = e as { data?: { statusMessage?: string }; statusMessage?: string; message?: string }
-  const msg = err?.data?.statusMessage || err?.statusMessage || err?.message || 'dépôt impossible.'
+  const msg = err?.data?.statusMessage || err?.statusMessage || err?.message || "l'envoi n'a pas abouti."
   return msg.startsWith('«') ? msg : `« ${nom} » : ${msg}`
 }
 
 function surDepot(e: DragEvent) {
   survol.value = false
-  void traiter([...(e.dataTransfer?.files ?? [])])
+  const fichiers = [...(e.dataTransfer?.files ?? [])]
+  void traiter(props.multiple ? fichiers : fichiers.slice(0, 1))
 }
 
 function surChoix(e: Event) {
@@ -65,30 +69,34 @@ function surChoix(e: Event) {
   <div>
     <div
       :class="[
-        'flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed text-center transition-colors',
-        compact ? 'gap-0.5 px-4 py-3' : 'gap-1 px-6 py-8',
-        survol ? 'border-clay-600 bg-clay-50' : 'border-black/15 bg-white hover:border-clay-300',
+        'flex flex-col items-center justify-center rounded-2xl border-2 border-dashed text-center transition-colors',
+        compact ? 'gap-2 px-4 py-4' : 'gap-3 px-6 py-10',
+        survol ? 'border-clay-600 bg-clay-50' : 'border-slate-300 bg-white',
       ]"
       data-testid="depot-zone"
       @dragover.prevent="survol = true"
       @dragleave="survol = false"
       @drop.prevent="surDepot"
-      @click="entree?.click()"
     >
-      <span class="text-[14px] font-semibold">
-        {{ enCours.length ? `Dépôt en cours… (${enCours.length})` : 'Déposer des photos' }}
-      </span>
-      <span class="text-[12.5px] text-slate-500">
-        Glisse tes fichiers ici, ou
-        <button type="button" class="font-semibold text-clay-700 underline" @click.stop="entree?.click()">
-          parcours l'ordinateur
+      <p v-if="enCours.length" class="text-[19px] font-semibold text-clay-800" aria-live="polite">
+        Envoi en cours… ({{ enCours.length }} photo{{ enCours.length > 1 ? 's' : '' }} restante{{ enCours.length > 1 ? 's' : '' }})
+      </p>
+      <template v-else>
+        <button
+          type="button"
+          class="min-h-14 rounded-xl bg-clay-600 px-7 text-[19px] font-bold text-white transition-colors hover:bg-clay-700"
+          @click="entree?.click()"
+        >
+          {{ multiple ? 'Ajouter des photos depuis l’ordinateur' : 'Ajouter une photo depuis l’ordinateur' }}
         </button>
-        · JPEG, PNG ou WebP, réduites automatiquement
-      </span>
+        <span class="text-[16px] text-slate-600">
+          ou faites-{{ multiple ? 'les' : 'la' }} glisser ici. Elles sont redressées et allégées toutes seules.
+        </span>
+      </template>
       <input
         ref="entree"
         type="file"
-        multiple
+        :multiple="multiple"
         accept="image/jpeg,image/png,image/webp"
         class="sr-only"
         data-testid="depot-champ"
@@ -96,8 +104,8 @@ function surChoix(e: Event) {
       >
     </div>
 
-    <ul v-if="echecs.length" class="mt-2 grid gap-1" role="alert">
-      <li v-for="e in echecs" :key="e" class="text-[13px] font-semibold text-red-700">{{ e }}</li>
+    <ul v-if="echecs.length" class="mt-3 grid gap-1" role="alert">
+      <li v-for="e in echecs" :key="e" class="text-[17px] font-semibold text-red-800">{{ e }}</li>
     </ul>
   </div>
 </template>

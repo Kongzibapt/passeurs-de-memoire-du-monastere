@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite'
+import { STOCKAGE_IMAGES } from './shared/phototheque'
 
 // URL de production, source unique (canonique, sitemap, Open Graph).
 // Modifiable via la variable d'environnement NUXT_PUBLIC_SITE_URL.
@@ -17,14 +18,16 @@ const description =
   "Mettre en valeur et protéger le patrimoine du Monastère (Aveyron) : l'abbaye, l'église " +
   "et le pont Vieux. Du IXe au XXIe siècle, sur les rives de l'Aveyron."
 
-// Hôte de Supabase Storage : les photos déposées depuis le back-office y sont
-// servies par adresse complète, et @nuxt/image n'optimise une image distante
-// que si son domaine est déclaré.
-const hotesImages: string[] = []
+// Hôte de Supabase Storage : toutes les images du site y sont servies par
+// adresse complète, et @nuxt/image n'optimise une image distante que si son
+// domaine est déclaré. Celui du bucket est écrit dans le code ; celui de
+// SUPABASE_URL s'y ajoute s'il diffère.
+const hotesImages = [new URL(STOCKAGE_IMAGES).hostname]
 try {
-  if (process.env.SUPABASE_URL) hotesImages.push(new URL(process.env.SUPABASE_URL).hostname)
+  const hote = process.env.SUPABASE_URL && new URL(process.env.SUPABASE_URL).hostname
+  if (hote && !hotesImages.includes(hote)) hotesImages.push(hote)
 } catch {
-  // SUPABASE_URL mal formée : pas de domaine à autoriser, le reste du site tourne.
+  // SUPABASE_URL mal formée : le domaine du bucket suffit.
 }
 
 // https://nuxt.com/docs/api/configuration/nuxt-config

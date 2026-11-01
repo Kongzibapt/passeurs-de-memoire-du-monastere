@@ -21,8 +21,6 @@ npm run dev               # http://localhost:3000
 | `npm run dev` | serveur de développement |
 | `npm run build` | build de production (Nitro) |
 | `npm run preview` | sert le build localement |
-| `npm run images` | remet d'aplomb et redimensionne les photos ajoutées |
-| `npm run phototheque` | réinventorie `public/img/` pour le back-office |
 | `npm run typecheck` | vérification TypeScript (`vue-tsc`) |
 | `npm test` | suite end-to-end Playwright |
 | `npm run test:ui` | la même, en mode pas à pas |
@@ -133,76 +131,42 @@ qu'on subit.
 
 Les affiches sont dessinées en HTML dans le bundle Claude Design, une planche
 par `<section class="page">`. `node scripts/exporter-affiches.mjs` rend la
-première planche de chacune et l'écrit dans `public/img/`, en masquant au
-passage les mentions de travail en cours (« Lieu et horaires à confirmer »),
-qui n'ont plus lieu d'être une fois l'événement passé.
+première planche de chacune et l'écrit dans `.captures/affiches/`, en masquant
+au passage les mentions de travail en cours (« Lieu et horaires à confirmer »),
+qui n'ont plus lieu d'être une fois l'événement passé. On la dépose ensuite dans
+`/admin/phototheque`.
 
 Une affiche n'a plus besoin d'être signalée comme telle : le carrousel décrit
 plus haut pose chaque image entière dans un cadre carré, et garde donc ses
 proportions A4 — avec son titre et sa date, c'est-à-dire tout ce qu'elle sert à
 dire.
 
-### Ajouter une photo : passer par `npm run images`
+### Les images : toutes dans Supabase Storage
 
-Les photos vont dans `public/img/`, versionnées avec le site. **Après en avoir
-déposé une, lancer `npm run images`.**
+Toutes les images du site vivent dans le **bucket Supabase Storage public**
+`phototheque`, une ligne par fichier dans la table du même nom. Le fonds
+d'origine (ce qui était `public/img/` jusqu'en novembre 2026) est rangé sous
+`historique/` ; le code y renvoie par `img('abbaye.jpg')` (`shared/phototheque.ts`).
+Les photos déposées depuis l'admin sont rangées sous leur année.
 
-Ce n'est pas une coquetterie. Un appareil photo tenu de travers n'enregistre pas
-les pixels tournés : il les laisse tels quels et ajoute une balise EXIF
-« oriente-moi de 90° ». L'aperçu de l'ordinateur lit cette balise et montre la
-photo droite — mais `@nuxt/image` réencode les photos en AVIF sans l'appliquer,
-et la photo s'affiche **couchée sur le site**, sans que rien dans le code ne
-l'explique. C'est arrivé à deux des photos de l'église.
-
-`npm run images` applique la rotation aux pixels eux-mêmes et ramène les images
-à 2880 px de large (au-delà, les pixels ne sont jamais servis). Il ne touche que
-ce qui en a besoin : le relancer ne dégrade rien.
-
-```bash
-npm run images -- --test   # signale sans modifier — utile en revue
-```
-
-Puis `npm run phototheque`, pour que l'image apparaisse dans le sélecteur du
-back-office — voir ci-dessous.
-
-### La photothèque : pourquoi un inventaire écrit dans le code
-
-Le back-office propose les images de `public/img/` dans une planche, au lieu de
-demander qu'on tape « /img/eglise-nef.jpg » de mémoire. Il lui faut donc la
-liste du dossier.
-
-On pourrait le lister à chaque requête — c'est ce qu'on fait en développement
-sans y penser. Mais **en production la fonction serveur ne voit pas `public/`** :
-Vercel sert ces fichiers depuis son CDN, et un `readdir` renverrait une liste
-vide. La photothèque marcherait en local et serait désespérément vide en ligne.
-
-L'inventaire est donc dressé à la construction, où le dossier est bien là, et
-figé dans `shared/phototheque-fichiers.ts` — un module TypeScript ordinaire,
-versionné : un diff montre les images ajoutées ou retirées.
-
-```bash
-npm run phototheque   # après avoir déposé des images ; `npm run build` le fait seul
-```
-
-### Déposer des photos depuis le back-office
-
-`/admin/phototheque` (et le sélecteur d'images des événements et des archives)
-accepte des photos glissées-déposées. Elles ne peuvent pas entrer dans le dépôt —
-la fonction serveur de Vercel n'écrit pas sur disque — et vont donc dans un
-**bucket Supabase Storage public**, `phototheque`. C'est la seule exception au
-« les images vivent dans le dépôt » : les images historiques de `public/img/`
-restent versionnées et ne se suppriment pas depuis l'admin ; les photos déposées
-se suppriment, puisque leur ajout n'a laissé aucune trace dans git.
+On ajoute une photo en la glissant dans `/admin/phototheque` (ou dans le
+sélecteur d'images des événements et des archives) ; on la supprime de là aussi,
+qu'elle vienne du fonds d'origine ou d'un dépôt.
 
 - Le navigateur **redresse (EXIF) et réduit** chaque photo avant l'envoi
-  (2 400 px max, JPEG) : Vercel refuse les corps de requête au-delà de 4,5 Mo, et
-  IPX ignore l'orientation EXIF.
-- Une photo déposée est inscrite dans la table `phototheque` avec sa légende et
-  son adresse complète pour `src`. Elle est utilisable aussitôt dans un
-  événement ou une archive.
-- Mise en route : rejouer `supabase/phototheque.sql` (colonnes ajoutées et bucket
-  créé, sans risque pour l'existant). L'hôte de `SUPABASE_URL` est déclaré
-  automatiquement dans `image.domains` pour que `@nuxt/image` l'optimise.
+  (2 400 px max, JPEG). Ce n'est pas une coquetterie : Vercel refuse les corps de
+  requête au-delà de 4,5 Mo, et `@nuxt/image` réencode les photos sans appliquer
+  la balise d'orientation — une photo prise de travers s'afficherait **couchée
+  sur le site**. C'est arrivé à deux des photos de l'église.
+- **Une photo qu'une page affiche ne se supprime pas** : le serveur refuse et
+  dit où elle sert (patrimoine, comparateur, Bureau, un événement, une archive).
+  On la remplace d'abord, puis on la supprime.
+- L'hôte du bucket est déclaré dans `image.domains` pour que `@nuxt/image`
+  l'optimise. Il est écrit en dur (`STOCKAGE_IMAGES`) : changer de projet
+  Supabase demande de recopier le bucket et de changer cette constante.
+- Les images ne sont plus versionnées : un bucket vidé ou un compte fermé les
+  ferait disparaître du site. L'historique git garde les fichiers d'origine
+  jusqu'au commit qui les a retirés.
 
 Les **légendes** se répartissent en trois couches, de la plus forte à la plus
 faible : la table Supabase `phototheque` (saisie au back-office), les légendes
@@ -217,7 +181,27 @@ l'écran.
 
 ## Back-office `/admin`
 
-Quatre écrans : **Événements**, **Archives**, **Photothèque**, **Réglages**.
+Deux rubriques, en gros : **Événements** et **Photothèque** ; les **Réglages**
+restent en petit en haut à droite. Le back-office est écrit pour des bénévoles
+peu à l'aise avec l'informatique : gros caractères, vouvoiement, une question
+par écran.
+
+- **Événements** sépare « À venir » et « Passés ». On annonce un événement avec
+  un assistant pas à pas (date, titre, lieu, présentations, programme, affiche,
+  bouton, vérification) ; une fois passé, on le raconte avec un second
+  assistant (récit, photos et légendes, question, appel aux visiteurs). Chaque
+  champ dit la longueur conseillée et si le texte la respecte
+  (`LONGUEURS`, `app/composables/useEvenementsAdmin.ts`). L'identifiant
+  d'adresse est tiré du titre ; rien n'est publié avant la dernière étape.
+- L'**affiche** d'un événement est la première photo de son souvenir : montrée
+  sous la date dans « À venir », elle reste ensuite en tête du souvenir. Un
+  événement passé sans récit n'apparaît pas sur le site.
+- **Photothèque** : on ajoute des photos, on les voit en planche, on en touche
+  une pour la nommer, la décrire ou la supprimer.
+
+L'ancien écran **Archives** a été retiré du back-office (novembre 2026) ; les
+archives du site restent servies, et leurs routes `/api/admin/archives` existent
+toujours.
 
 L'accès tient à un mot de passe unique partagé (`ADMIN_PASSWORD`). Le cookie de
 session ne contient pas ce mot de passe mais un HMAC qui en dérive : le changer
@@ -350,7 +334,7 @@ Environment Variables* les clés de `.env.example` qui s'appliquent, au minimum
 `ADMIN_PASSWORD` si le back-office doit servir.
 
 L'image de partage `public/og-image.jpg` (1200 × 630) est un recadrage de
-`public/img/pont-panorama.jpg` — région `150,90 2297×1206`, soit les arches et
+`pont-panorama.jpg` (fonds d'origine, voir plus haut) — région `150,90 2297×1206`, soit les arches et
 leur reflet sans le ciel superflu. Pour la refaire à partir d'une autre photo,
 c'est ce ratio de 1,905 qu'il faut viser : c'est celui qu'attendent Facebook,
 WhatsApp, LinkedIn et X.

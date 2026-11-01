@@ -1,23 +1,19 @@
 <script setup lang="ts">
-import {
-  aujourdhuiISO,
-  libelleDate,
-  type Evenement,
-  type EtapeProgramme,
-} from '#shared/evenements'
-import type { Image } from '#shared/phototheque'
+import { afficheDe, aVenir, estRaconte, libelleDate, passes, type Evenement } from '#shared/evenements'
+import { messageErreur } from '~/composables/useEvenementsAdmin'
 
 /**
- * Gestion des événements.
+ * Les événements, en deux colonnes de vie : ceux qui viennent, ceux qui sont
+ * passés.
  *
- * Un seul formulaire couvre les deux moments d'un rendez-vous : son annonce, et
- * le souvenir qu'on en garde. C'est volontaire — écrire le souvenir revient à
- * compléter la fiche existante, pas à créer une seconde entrée, et l'événement
- * conserve ainsi sa date, son titre et son identité.
+ * À venir, on annonce ; une fois passés, on raconte. Chacun de ces gestes a son
+ * assistant pas à pas (`AdminAssistantAnnonce`, `AdminAssistantSouvenir`) qui
+ * prend toute la page : une seule chose à faire à la fois, et la liste revient
+ * une fois publié.
  *
- * Les événements « du code » (ceux de la maquette) ne sont pas modifiables en
- * place : les enregistrer crée en base une version de même `slug`, qui les
- * remplace sur le site. L'original reste donc toujours récupérable.
+ * Les événements « d'origine » (définis dans le code) se modifient comme les
+ * autres : les publier crée en base une version qui les remplace sur le site.
+ * Ils ne se suppriment pas.
  */
 definePageMeta({ middleware: 'admin' })
 
@@ -27,362 +23,199 @@ const { data: evenements, refresh } = await useAsyncData('admin-evenements', () 
   useRequestFetch()<Evenement[]>('/api/admin/evenements'),
 )
 
-const vide = (): Evenement => ({
-  id: '',
-  slug: '',
-  date: aujourdhuiISO(),
-  cadre: '',
-  titre: '',
-  titreAccueil: '',
-  resume: '',
-  description: '',
-  programme: [],
-  cta: { label: '', href: '', variant: 'secondary' },
-  souvenir: { recit: '', question: '', photos: [], cta: { label: '', href: '', variant: 'secondary' } },
-  source: 'db',
-})
+const liste = computed(() => evenements.value ?? [])
+const prochains = computed(() => aVenir(liste.value))
+const anciens = computed(() => passes(liste.value))
+const pris = computed(() => liste.value.map((e) => e.slug))
 
-const brouillon = ref<Evenement>(vide())
-const edition = ref(false)
+type Mode = { quoi: 'liste' } | { quoi: 'annonce'; e?: Evenement } | { quoi: 'souvenir'; e: Evenement }
+const mode = ref<Mode>({ quoi: 'liste' })
 const message = ref('')
 const erreur = ref('')
-const enregistrement = ref(false)
 
-function nouveau() {
-  brouillon.value = vide()
-  edition.value = true
+function ouvrir(m: Mode) {
+  mode.value = m
   message.value = ''
   erreur.value = ''
+  if (import.meta.client) window.scrollTo({ top: 0 })
 }
 
-function editer(e: Evenement) {
-  // Copie profonde : tant que l'enregistrement n'a pas eu lieu, la liste
-  // affichée ne doit pas refléter les frappes en cours.
-  brouillon.value = JSON.parse(JSON.stringify({ ...vide(), ...e }))
-  edition.value = true
-  message.value = ''
-  erreur.value = ''
-}
-
-function ajouterEtape() {
-  brouillon.value.programme.push({ heure: '', quoi: '' } as EtapeProgramme)
-}
-function retirerEtape(i: number) {
-  brouillon.value.programme.splice(i, 1)
-}
-function retirerPhoto(i: number) {
-  brouillon.value.souvenir!.photos.splice(i, 1)
-}
-
-/**
- * Les photos viennent de la photothèque, pas d'un champ à remplir.
- *
- * Choisies dans la planche, elles arrivent avec leur titre, leur texte
- * alternatif et leur crédit. Le formulaire reste modifiable ensuite : une même
- * photo peut se légender autrement selon l'événement où elle figure — c'est la
- * photothèque qui donne le point de départ, pas la dernière réponse.
- */
-const selecteurOuvert = ref(false)
-const dejaLa = computed(() => brouillon.value.souvenir?.photos.map((p) => p.src) ?? [])
-
-function ajouterDepuisPhototheque(images: Image[]) {
-  for (const image of images) {
-    brouillon.value.souvenir!.photos.push({
-      src: image.src,
-      alt: image.alt,
-      titre: image.titre,
-      credit: image.credit,
-    })
-  }
-}
-
-/** Ne transmet le souvenir que s'il porte quelque chose à afficher. */
-function corpsAEnvoyer() {
-  const e = brouillon.value
-  const souvenirUtile = !!e.souvenir?.recit?.trim() || !!e.souvenir?.photos.length
-  return {
-    slug: e.slug.trim(),
-    date: e.date,
-    cadre: e.cadre.trim(),
-    titre: e.titre.trim(),
-    titreAccueil: e.titreAccueil?.trim() || null,
-    resume: e.resume.trim(),
-    description: e.description.trim(),
-    programme: e.programme.filter((p) => p.heure.trim() || p.quoi.trim()),
-    cta: e.cta?.label?.trim() ? e.cta : null,
-    souvenir: souvenirUtile
-      ? {
-          ...e.souvenir!,
-          photos: e.souvenir!.photos.filter((p) => p.src.trim()),
-          cta: e.souvenir!.cta?.label?.trim() ? e.souvenir!.cta : undefined,
-        }
-      : null,
-  }
-}
-
-async function enregistrer() {
-  enregistrement.value = true
-  erreur.value = ''
-  message.value = ''
-  try {
-    const corps = corpsAEnvoyer()
-    // Un événement défini dans le code n'a pas de ligne en base : l'enregistrer
-    // en crée une, de même slug, qui prendra sa place sur le site.
-    const enBase = brouillon.value.id && !brouillon.value.id.startsWith('seed:')
-    if (enBase) {
-      await $fetch(`/api/admin/evenements/${brouillon.value.id}`, { method: 'PATCH', body: corps })
-    } else {
-      await $fetch('/api/admin/evenements', { method: 'POST', body: corps })
-    }
-    message.value = 'Enregistré. Le site est à jour dans la minute.'
-    edition.value = false
-    await refresh()
-  } catch (e: unknown) {
-    erreur.value = (e as { statusMessage?: string })?.statusMessage || 'Enregistrement impossible.'
-  } finally {
-    enregistrement.value = false
-  }
+async function apresPublication(titre: string) {
+  await refresh()
+  ouvrir({ quoi: 'liste' })
+  message.value = `« ${titre} » est publié. Le site est à jour dans la minute.`
 }
 
 async function supprimer(e: Evenement) {
-  if (!confirm(`Supprimer « ${e.titre} » ? Cette action est définitive.`)) return
+  if (!confirm(`Supprimer « ${e.titre} » du site ? Cette action est définitive.`)) return
   erreur.value = ''
+  message.value = ''
   try {
     await $fetch(`/api/admin/evenements/${e.id}`, { method: 'DELETE' })
-    message.value = 'Supprimé.'
+    message.value = `« ${e.titre} » a été supprimé.`
     await refresh()
   } catch (err: unknown) {
-    erreur.value = (err as { statusMessage?: string })?.statusMessage || 'Suppression impossible.'
+    erreur.value = messageErreur(err, "La suppression n'a pas abouti. Réessayez dans un instant.")
   }
 }
 
-const jour = aujourdhuiISO()
-const champ =
-  'mt-1 w-full border border-black/15 bg-white px-3 py-2 text-[14px] outline-none focus:border-clay-500'
-const etiquette = 'block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-600'
+const bouton =
+  'inline-flex min-h-13 items-center justify-center rounded-xl px-6 text-[18px] font-bold transition-colors'
 </script>
 
 <template>
   <AdminShell titre="Événements">
-    <div class="flex flex-wrap items-center justify-between gap-4">
-      <div>
-        <h1 class="font-display text-[26px] font-bold tracking-tight">Événements</h1>
-        <p class="mt-1 text-[14px] text-slate-600">
-          Les rendez-vous à venir et les souvenirs de ceux qui ont eu lieu.
-        </p>
-      </div>
-      <button
-        type="button"
-        class="bg-clay-600 px-4 py-2 text-[14px] font-semibold text-white transition-colors hover:bg-clay-700"
-        @click="nouveau"
-      >
-        + Nouvel événement
-      </button>
-    </div>
+    <AdminAssistantAnnonce
+      v-if="mode.quoi === 'annonce'"
+      :evenement="mode.e"
+      :pris="pris"
+      @publie="apresPublication"
+      @annuler="ouvrir({ quoi: 'liste' })"
+    />
 
-    <p v-if="message" class="mt-5 border-l-4 border-sage-500 bg-sage-100 px-4 py-3 text-[14px] text-sage-700">
-      {{ message }}
-    </p>
-    <p v-if="erreur" class="mt-5 border-l-4 border-[#A23A2A] bg-[#F2D9D3] px-4 py-3 text-[14px] text-[#A23A2A]">
-      {{ erreur }}
-    </p>
+    <AdminAssistantSouvenir
+      v-else-if="mode.quoi === 'souvenir'"
+      :evenement="mode.e"
+      @publie="apresPublication"
+      @annuler="ouvrir({ quoi: 'liste' })"
+    />
 
-    <!-- Formulaire -->
-    <form v-if="edition" class="mt-7 border border-black/10 bg-white p-6" @submit.prevent="enregistrer">
-      <div
-        v-if="brouillon.id.startsWith('seed:')"
-        class="mb-5 border-l-4 border-clay-400 bg-clay-50 px-4 py-3 text-[13px] leading-relaxed text-slate-700"
-      >
-        Cet événement est défini dans le code. L'enregistrer publiera une version modifiée qui
-        prendra sa place sur le site ; l'original restera intact dans les sources.
-      </div>
-
-      <h2 class="font-display text-[17px] font-bold">L'annonce</h2>
-      <div class="mt-4 grid gap-4 sm:grid-cols-2">
-        <div>
-          <label :class="etiquette" for="f-slug">Identifiant (slug)</label>
-          <input id="f-slug" v-model="brouillon.slug" :class="champ" required placeholder="visite-guidee-2027">
-        </div>
-        <div>
-          <label :class="etiquette" for="f-date">Date</label>
-          <input id="f-date" v-model="brouillon.date" type="date" :class="champ" required>
-        </div>
-        <div class="sm:col-span-2">
-          <span :class="etiquette">Telle qu'elle s'affichera</span>
-          <p class="mt-1 font-accent text-[17px] italic text-clay-700">
-            {{ brouillon.date ? libelleDate(brouillon.date) : '—' }}
-          </p>
-          <p class="mt-1 text-[12px] text-slate-500">
-            Le libellé est calculé depuis la date : il s'écrit pareil sur tout le site, et il n'y a
-            rien à saisir.
-          </p>
-        </div>
-        <div class="sm:col-span-2">
-          <label :class="etiquette" for="f-cadre">Cadre (sous la date)</label>
-          <input id="f-cadre" v-model="brouillon.cadre" :class="champ" placeholder="Journées européennes du patrimoine">
-        </div>
-        <div class="sm:col-span-2">
-          <label :class="etiquette" for="f-titre">Titre</label>
-          <input id="f-titre" v-model="brouillon.titre" :class="champ" required>
-        </div>
-        <div class="sm:col-span-2">
-          <label :class="etiquette" for="f-ta">Titre raccourci pour l'accueil (facultatif)</label>
-          <input id="f-ta" v-model="brouillon.titreAccueil" :class="champ">
-        </div>
-        <div class="sm:col-span-2">
-          <label :class="etiquette" for="f-resume">Résumé (accueil)</label>
-          <textarea id="f-resume" v-model="brouillon.resume" rows="2" :class="champ" />
-        </div>
-        <div class="sm:col-span-2">
-          <label :class="etiquette" for="f-desc">Présentation (page Actualités)</label>
-          <textarea id="f-desc" v-model="brouillon.description" rows="4" :class="champ" />
-        </div>
-      </div>
-
-      <h3 class="mt-7 font-display text-[15px] font-bold">Programme (facultatif)</h3>
-      <div v-for="(etape, i) in brouillon.programme" :key="i" class="mt-3 flex gap-3">
-        <input v-model="etape.heure" :class="[champ, 'max-w-[110px]']" placeholder="14h30">
-        <input v-model="etape.quoi" :class="champ" placeholder="Conférence">
-        <button type="button" class="px-3 text-[13px] text-slate-500 hover:text-[#A23A2A]" @click="retirerEtape(i)">
-          Retirer
+    <div v-else class="mx-auto max-w-[900px]">
+      <div class="flex flex-wrap items-center justify-between gap-5">
+        <h1 class="font-display text-[32px] font-bold">Les événements</h1>
+        <button
+          type="button"
+          :class="[bouton, 'bg-clay-600 text-white hover:bg-clay-700']"
+          @click="ouvrir({ quoi: 'annonce' })"
+        >
+          + Annoncer un nouvel événement
         </button>
       </div>
-      <button type="button" class="mt-3 text-[13px] font-semibold text-clay-700" @click="ajouterEtape">
-        + Ajouter une étape
-      </button>
 
-      <h3 class="mt-7 font-display text-[15px] font-bold">Bouton de l'événement</h3>
-      <div class="mt-3 grid gap-4 sm:grid-cols-3">
-        <div>
-          <label :class="etiquette" for="f-ctal">Libellé</label>
-          <input id="f-ctal" v-model="brouillon.cta!.label" :class="champ" placeholder="Être prévenu">
-        </div>
-        <div class="sm:col-span-2">
-          <label :class="etiquette" for="f-ctah">Lien</label>
-          <input
-            id="f-ctah"
-            v-model="brouillon.cta!.href"
-            :class="champ"
-            placeholder="adhesion, mailto:?sujet=… ou une URL"
-          >
-          <p class="mt-1 text-[12px] text-slate-500">
-            <code class="font-mono">adhesion</code> pointe vers le lien HelloAsso du moment ;
-            <code class="font-mono">mailto:?sujet=Ma visite</code> écrit à l'association avec cet objet.
-          </p>
-        </div>
-      </div>
-
-      <h2 class="mt-9 font-display text-[17px] font-bold">Le souvenir</h2>
-      <p class="mt-1 text-[13px] text-slate-600">
-        À remplir après coup. Dès le lendemain de la date, l'événement quitte « À venir » et ce bloc
-        prend sa place dans « C'était chez nous ». Laissé vide, l'événement disparaît simplement.
+      <p
+        v-if="message"
+        class="mt-6 rounded-xl border-l-4 border-green-700 bg-green-50 px-5 py-4 text-[18px] font-semibold text-green-900"
+        role="status"
+      >
+        ✓ {{ message }}
       </p>
-      <div class="mt-4 grid gap-4">
-        <div>
-          <label :class="etiquette" for="f-recit">Récit</label>
-          <textarea id="f-recit" v-model="brouillon.souvenir!.recit" rows="3" :class="champ" />
-        </div>
-        <div>
-          <label :class="etiquette" for="f-question">Question mise en exergue (facultatif)</label>
-          <input id="f-question" v-model="brouillon.souvenir!.question" :class="champ">
-        </div>
-      </div>
-
-      <h3 class="mt-6 font-display text-[15px] font-bold">Photos du souvenir</h3>
-      <div
-        v-for="(photo, i) in brouillon.souvenir!.photos"
-        :key="i"
-        class="mt-3 grid gap-3 sm:grid-cols-[88px_1fr_auto]"
+      <p
+        v-if="erreur"
+        class="mt-6 rounded-xl border-l-4 border-[#A23A2A] bg-[#F2D9D3] px-5 py-4 text-[18px] text-[#7a2a1f]"
+        role="alert"
       >
-        <img
-          :src="photo.src"
-          :alt="photo.alt"
-          class="h-16.5 w-22 rounded border border-black/10 bg-slate-100 object-cover"
-        >
-        <div class="grid gap-2">
-          <input v-model="photo.titre" :class="champ" placeholder="La nef, le 3 juillet">
-          <input v-model="photo.alt" :class="champ" placeholder="Texte alternatif">
-          <div class="grid gap-2 sm:grid-cols-2">
-            <input v-model="photo.credit" :class="champ" placeholder="Photo de l'association">
-            <input v-model="photo.src" :class="champ" placeholder="/img/…jpg">
-          </div>
-        </div>
-        <button
-          type="button"
-          class="self-start px-2 py-2 text-[13px] text-slate-500 hover:text-[#A23A2A]"
-          :aria-label="`Retirer ${photo.titre || photo.src}`"
-          @click="retirerPhoto(i)"
-        >
-          ✕
-        </button>
-      </div>
-      <button
-        type="button"
-        class="mt-3 text-[13px] font-semibold text-clay-700"
-        @click="selecteurOuvert = true"
-      >
-        + Choisir dans la photothèque
-      </button>
+        {{ erreur }}
+      </p>
 
-      <AdminSelecteurPhoto
-        v-model:ouvert="selecteurOuvert"
-        multiple
-        :deja-la="dejaLa"
-        @choisir="ajouterDepuisPhototheque"
-      />
+      <!-- À venir -->
+      <section class="mt-10" aria-labelledby="titre-a-venir">
+        <h2 id="titre-a-venir" class="flex items-center gap-3 font-display text-[24px] font-bold text-green-900">
+          <span class="h-3.5 w-3.5 rounded-full bg-green-600" aria-hidden="true" />
+          À venir
+        </h2>
+        <p class="mt-1 text-[17px] text-slate-600">Annoncés sur le site jusqu'au jour de l'événement.</p>
 
-      <div class="mt-8 flex flex-wrap gap-3 border-t border-black/10 pt-6">
-        <button
-          type="submit"
-          class="bg-clay-600 px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-clay-700 disabled:opacity-50"
-          :disabled="enregistrement"
-        >
-          {{ enregistrement ? 'Enregistrement…' : 'Enregistrer' }}
-        </button>
-        <button
-          type="button"
-          class="border border-black/20 px-5 py-2.5 text-[14px] font-semibold"
-          @click="edition = false"
-        >
-          Annuler
-        </button>
-      </div>
-    </form>
-
-    <!-- Liste -->
-    <div class="mt-8 border border-black/10 bg-white">
-      <article
-        v-for="e in evenements"
-        :key="e.id"
-        class="flex flex-wrap items-start justify-between gap-4 border-b border-black/10 px-5 py-4 last:border-b-0"
-      >
-        <div class="min-w-0">
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="font-accent text-[15px] italic text-clay-700">{{ libelleDate(e.date) }}</span>
-            <span
-              class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em]"
-              :class="e.date >= jour ? 'bg-sage-100 text-sage-700' : 'bg-slate-100 text-slate-600'"
-            >
-              {{ e.date >= jour ? 'À venir' : e.souvenir ? 'Souvenir' : 'Passé, sans souvenir' }}
-            </span>
-          </div>
-          <h2 class="mt-1 font-display text-[16px] font-bold">{{ e.titre }}</h2>
-          <p class="mt-1 max-w-[70ch] text-[13px] text-slate-600">{{ e.resume || e.description }}</p>
-        </div>
-        <div class="flex shrink-0 gap-3">
-          <button type="button" class="text-[13px] font-semibold text-clay-700" @click="editer(e)">
-            Modifier
-          </button>
-          <button
-            v-if="e.source === 'db'"
-            type="button"
-            class="text-[13px] font-semibold text-[#A23A2A]"
-            @click="supprimer(e)"
+        <p v-if="!prochains.length" class="mt-5 rounded-xl bg-white px-6 py-5 text-[18px] text-slate-600">
+          Aucun événement annoncé pour le moment.
+        </p>
+        <ul v-else class="mt-5 grid gap-4">
+          <li
+            v-for="e in prochains"
+            :key="e.id"
+            class="flex flex-wrap items-center gap-5 rounded-2xl border-2 border-green-200 bg-white p-5"
           >
-            Supprimer
-          </button>
-        </div>
-      </article>
+            <img
+              v-if="afficheDe(e)"
+              :src="afficheDe(e)!.src"
+              :alt="afficheDe(e)!.alt"
+              class="h-24 w-20 shrink-0 rounded-lg border border-black/10 object-cover"
+            >
+            <div class="w-full min-w-0 sm:w-auto sm:flex-1">
+              <p class="font-accent text-[20px] italic text-clay-800">{{ libelleDate(e.date) }}</p>
+              <h3 class="mt-0.5 text-[21px] font-bold leading-snug">{{ e.titre }}</h3>
+              <p v-if="e.cadre" class="text-[16px] text-slate-600">{{ e.cadre }}</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-4">
+              <button
+                type="button"
+                :class="[bouton, 'border-2 border-clay-600 bg-white text-clay-800 hover:bg-clay-50']"
+                @click="ouvrir({ quoi: 'annonce', e })"
+              >
+                Modifier l'annonce
+              </button>
+              <button
+                v-if="e.source === 'db'"
+                type="button"
+                class="text-[16px] font-semibold text-[#A23A2A] underline underline-offset-4"
+                @click="supprimer(e)"
+              >
+                Supprimer
+              </button>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Passés -->
+      <section class="mt-14" aria-labelledby="titre-passes">
+        <h2 id="titre-passes" class="flex items-center gap-3 font-display text-[24px] font-bold text-slate-700">
+          <span class="h-3.5 w-3.5 rounded-full bg-slate-400" aria-hidden="true" />
+          Passés
+        </h2>
+        <p class="mt-1 text-[17px] text-slate-600">
+          Une fois raconté, un événement passé s'affiche dans « C'était chez nous ». Sans récit, il
+          n'apparaît plus sur le site.
+        </p>
+
+        <p v-if="!anciens.length" class="mt-5 rounded-xl bg-white px-6 py-5 text-[18px] text-slate-600">
+          Aucun événement passé.
+        </p>
+        <ul v-else class="mt-5 grid gap-4">
+          <li
+            v-for="e in anciens"
+            :key="e.id"
+            class="flex flex-wrap items-center gap-5 rounded-2xl border-2 p-5"
+            :class="estRaconte(e) ? 'border-slate-200 bg-slate-50' : 'border-amber-300 bg-amber-50'"
+          >
+            <div class="w-full min-w-0 sm:w-auto sm:flex-1">
+              <p class="font-accent text-[19px] italic text-slate-600">{{ libelleDate(e.date) }}</p>
+              <h3 class="mt-0.5 text-[20px] font-bold leading-snug text-slate-800">{{ e.titre }}</h3>
+              <p
+                class="mt-1 text-[16px] font-semibold"
+                :class="estRaconte(e) ? 'text-green-800' : 'text-amber-900'"
+              >
+                {{
+                  estRaconte(e)
+                    ? `✓ Souvenir publié${e.souvenir?.photos.length ? ` · ${e.souvenir.photos.length} photo${e.souvenir.photos.length > 1 ? 's' : ''}` : ''}`
+                    : '! Pas encore raconté — invisible sur le site'
+                }}
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-4">
+              <button
+                type="button"
+                :class="[
+                  bouton,
+                  estRaconte(e)
+                    ? 'border-2 border-slate-400 bg-white text-slate-800 hover:border-slate-600'
+                    : 'bg-clay-600 text-white hover:bg-clay-700',
+                ]"
+                @click="ouvrir({ quoi: 'souvenir', e })"
+              >
+                {{ estRaconte(e) ? 'Modifier le souvenir' : 'Raconter cet événement' }}
+              </button>
+              <button
+                v-if="e.source === 'db'"
+                type="button"
+                class="text-[16px] font-semibold text-[#A23A2A] underline underline-offset-4"
+                @click="supprimer(e)"
+              >
+                Supprimer
+              </button>
+            </div>
+          </li>
+        </ul>
+      </section>
     </div>
   </AdminShell>
 </template>

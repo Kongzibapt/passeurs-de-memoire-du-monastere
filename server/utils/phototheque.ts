@@ -1,29 +1,28 @@
-import { FICHIERS_IMAGES } from '#shared/phototheque-fichiers'
 import {
   composerPhototheque,
+  PHOTO_BUREAU,
   titreParDefaut,
   type FichierImage,
   type Image,
   type LegendeImage,
 } from '#shared/phototheque'
+import { MONUMENTS } from '../../app/data/patrimoine'
+import { COMPARAISONS } from '../../app/data/comparaisons'
+import { getArchives } from './archives'
+import { getEvenementsPublics } from './evenements'
 import { getSupabaseServer, requireSupabase, tableAbsente } from './supabase'
 
 /**
  * Couche d'accès à la photothèque.
  *
- * L'inventaire des fichiers vient du code — il est dressé à la construction, où
- * le dossier `public/img/` existe encore (sur Vercel la fonction serveur ne le
- * voit pas). Supabase n'apporte que les légendes retouchées au back-office, et
- * l'emporte sur celles écrites dans `shared/phototheque.ts`.
+ * Toutes les images vivent dans le bucket Supabase `phototheque` — celles du
+ * fonds d'origine sous `historique/`, celles déposées depuis le back-office sous
+ * leur année. La table du même nom porte une ligne par fichier : son adresse, ses
+ * dimensions, et la légende retouchée au back-office, qui l'emporte sur celle
+ * écrite dans `shared/phototheque.ts`.
  *
- * Les photos DÉPOSÉES depuis le back-office font exception : elles ne peuvent pas
- * entrer dans le dépôt, la fonction serveur n'écrivant pas sur disque. Elles
- * vont dans le bucket Supabase `phototheque`, et leur ligne de table porte, avec
- * la légende, ce que l'inventaire sait des fichiers du dépôt (dimensions, poids).
- *
- * Conséquence utile : la photothèque fonctionne même sans base. Sans Supabase
- * on ne peut pas modifier une légende, mais on peut choisir ses images — ce qui
- * est l'essentiel de ce qu'on lui demande.
+ * Sans base, la photothèque est vide : on ne peut plus choisir d'image dans le
+ * back-office, mais le site public, qui connaît les adresses, s'affiche.
  */
 
 export const PHOTOTHEQUE_TABLE = 'phototheque'
@@ -89,27 +88,34 @@ export async function getPhototheque(): Promise<Image[]> {
 
   const base: Record<string, Partial<LegendeImage>> = {}
   const deposees: FichierImage[] = []
+  const historiques: FichierImage[] = []
   for (const r of lignes) {
-    base[r.src] = {
-      titre: r.titre ?? undefined,
-      alt: r.alt ?? undefined,
-      credit: r.credit ?? undefined,
-      motsCles: r.mots_cles ?? undefined,
+    if (!r.depose) continue
+    // Une ligne sans légende saisie ne fait pas « base » : la légende du code
+    // reste celle qu'on affiche, et l'admin le dit.
+    if (r.titre || r.alt || r.credit || r.mots_cles?.length) {
+      base[r.src] = {
+        titre: r.titre ?? undefined,
+        alt: r.alt ?? undefined,
+        credit: r.credit ?? undefined,
+        motsCles: r.mots_cles ?? undefined,
+      }
     }
-    if (r.depose) {
-      deposees.push({
-        src: r.src,
-        largeur: r.largeur ?? 0,
-        hauteur: r.hauteur ?? 0,
-        octets: r.octets ?? 0,
-        depose: true,
-      })
+    const fichier = {
+      src: r.src,
+      largeur: r.largeur ?? 0,
+      hauteur: r.hauteur ?? 0,
+      octets: r.octets ?? 0,
+      depose: true,
     }
+    if (r.chemin?.startsWith('historique/')) historiques.push(fichier)
+    else deposees.push(fichier)
   }
 
-  // Les photos déposées d'abord : ce sont les plus récentes, et celles qu'on
-  // cherche en composant un événement.
-  return composerPhototheque([...deposees.reverse(), ...FICHIERS_IMAGES], base)
+  // Les photos déposées d'abord, les plus récentes en tête : ce sont celles
+  // qu'on cherche en composant un événement. Le fonds d'origine suit, par nom.
+  const parNom = (a: FichierImage, b: FichierImage) => a.src.localeCompare(b.src)
+  return composerPhototheque([...deposees.reverse(), ...historiques.sort(parNom)], base)
 }
 
 export interface DepotInput {
@@ -178,13 +184,41 @@ export async function deposerImage(input: DepotInput): Promise<Image> {
 }
 
 /**
- * Supprime une photo déposée : le fichier du bucket et sa ligne.
+ * Où une image s'affiche sur le site — vide si elle ne sert nulle part.
  *
- * Les images du dépôt ne se suppriment pas d'ici — elles sont versionnées avec
- * le site. Une photo supprimée alors qu'un événement l'affiche y laisse un
- * trou ; le back-office le dit avant de confirmer.
+ * On cherche l'adresse dans tout ce qui peut porter une image : les pages fixes
+ * (patrimoine, comparateur, bureau) et les événements et archives, ceux du code
+ * comme ceux de la base. Chercher dans le JSON plutôt que champ par champ : un
+ * champ d'image ajouté plus tard sera couvert sans y penser.
+ */
+export async function usagesImage(src: string): Promise<string[]> {
+  const usages: string[] = []
+  const contient = (x: unknown) => JSON.stringify(x).includes(src)
+
+  for (const m of MONUMENTS) if (contient(m)) usages.push(`la page patrimoine (${m.titre})`)
+  for (const c of COMPARAISONS) if (contient(c)) usages.push(`le comparateur (${c.onglet})`)
+  if (src === PHOTO_BUREAU) usages.push('la section « Le Bureau et les membres »')
+  for (const e of await getEvenementsPublics()) if (contient(e)) usages.push(`l'événement « ${e.titre} »`)
+  for (const a of await getArchives()) if (contient(a)) usages.push(`l'archive « ${a.titre} »`)
+  return usages
+}
+
+/**
+ * Supprime une photo : le fichier du bucket et sa ligne.
+ *
+ * Refusé tant que la photo s'affiche quelque part : la supprimer laisserait un
+ * trou dans la page, et on ne s'en apercevrait qu'en la visitant. Le message dit
+ * où elle sert, pour qu'on la remplace d'abord.
  */
 export async function supprimerDepot(src: string): Promise<void> {
+  const usages = await usagesImage(src)
+  if (usages.length) {
+    throw createError({
+      statusCode: 409,
+      statusMessage: `Cette photo est affichée sur le site (${usages.join(', ')}). Remplacez-la d'abord à cet endroit, puis revenez la supprimer.`,
+    })
+  }
+
   const supabase = requireSupabase()
   const { data, error } = await supabase
     .from(PHOTOTHEQUE_TABLE)
@@ -236,17 +270,14 @@ export async function enregistrerLegende(src: string, input: LegendeInput): Prom
 /**
  * Oublie la légende saisie et rend la main au code.
  *
- * Ce n'est pas une suppression d'image : le fichier reste dans le dépôt, et
- * l'image reste proposée. Seule la retouche du back-office disparaît.
+ * Ce n'est pas une suppression d'image : la ligne garde le fichier, seuls les
+ * champs de légende sont vidés. Effacer la ligne retirerait la photo de la liste.
  */
 export async function oublierLegende(src: string): Promise<Image> {
-  if ((await getPhototheque()).find((i) => i.src === src)?.depose) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Une photo déposée n’a pas de légende du code : modifie-la, ou supprime la photo.',
-    })
-  }
-  const { error } = await requireSupabase().from(PHOTOTHEQUE_TABLE).delete().eq('src', src)
+  const { error } = await requireSupabase()
+    .from(PHOTOTHEQUE_TABLE)
+    .update({ titre: null, alt: null, credit: null, mots_cles: [], updated_at: new Date().toISOString() })
+    .eq('src', src)
   if (error) throw erreurEcriture(error)
 
   const images = await getPhototheque()

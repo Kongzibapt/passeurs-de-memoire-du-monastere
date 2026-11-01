@@ -1,7 +1,7 @@
 import { requireAdmin } from '../../../utils/adminAuth'
 import { supprimerDepot } from '../../../utils/phototheque'
 
-/** Supprime une photo déposée (fichier + ligne). Celles du dépôt ne se suppriment pas d'ici. */
+/** Supprime une photo (fichier + ligne), sauf si une page l'affiche encore. */
 export default defineEventHandler(async (event) => {
   requireAdmin(event)
   const { src } = await readBody<{ src?: string }>(event)

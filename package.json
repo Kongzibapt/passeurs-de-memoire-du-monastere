@@ -4,12 +4,10 @@
   "type": "module",
   "scripts": {
     "dev": "nuxt dev",
-    "build": "node scripts/construire-phototheque.mjs && nuxt build",
+    "build": "nuxt build",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "images": "node scripts/normaliser-images.mjs",
-    "phototheque": "node scripts/construire-phototheque.mjs",
     "typecheck": "nuxt typecheck",
     "test": "playwright test",
     "test:ui": "playwright test --ui",

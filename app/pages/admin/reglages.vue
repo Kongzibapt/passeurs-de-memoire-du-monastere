@@ -39,38 +39,44 @@ async function enregistrer() {
 
 <template>
   <AdminShell titre="Réglages">
-    <h1 class="font-display text-[26px] font-bold tracking-tight">Réglages</h1>
+    <div class="mx-auto max-w-[760px]">
+      <h1 class="font-display text-[32px] font-bold">Réglages</h1>
 
-    <form class="mt-7 max-w-[720px] border border-black/10 bg-white p-6" @submit.prevent="enregistrer">
-      <label for="r-adhesion" class="block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-600">
-        Lien d'adhésion HelloAsso
-      </label>
-      <input
-        id="r-adhesion"
-        v-model="urlAdhesion"
-        type="url"
-        required
-        class="mt-2 w-full border border-black/15 bg-white px-3 py-2.5 text-[14px] outline-none focus:border-clay-500"
-      >
-      <p class="mt-2 text-[13px] leading-relaxed text-slate-600">
-        Il change à chaque campagne annuelle. Le mettre à jour ici suffit : tous les boutons
-        « Adhérer » du site, y compris ceux des événements, suivent cette valeur.
-      </p>
+      <form class="mt-7 rounded-2xl border border-black/10 bg-white p-6 sm:p-8" @submit.prevent="enregistrer">
+        <label for="r-adhesion" class="block text-[22px] font-bold">Lien d'adhésion HelloAsso</label>
+        <p class="mt-2 text-[17px] leading-relaxed text-slate-600">
+          Il change à chaque campagne annuelle. Le mettre à jour ici suffit : tous les boutons
+          « Adhérer » du site suivent ce lien.
+        </p>
+        <input
+          id="r-adhesion"
+          v-model="urlAdhesion"
+          type="url"
+          required
+          class="mt-4 w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-[18px] outline-none focus:border-clay-600"
+        >
 
-      <p v-if="message" class="mt-5 border-l-4 border-sage-500 bg-sage-100 px-4 py-3 text-[14px] text-sage-700">
-        {{ message }}
-      </p>
-      <p v-if="erreur" class="mt-5 border-l-4 border-[#A23A2A] bg-[#F2D9D3] px-4 py-3 text-[14px] text-[#A23A2A]">
-        {{ erreur }}
-      </p>
+        <p
+          v-if="message"
+          class="mt-6 rounded-xl border-l-4 border-green-700 bg-green-50 px-5 py-4 text-[18px] font-semibold text-green-900"
+        >
+          ✓ {{ message }}
+        </p>
+        <p
+          v-if="erreur"
+          class="mt-6 rounded-xl border-l-4 border-[#A23A2A] bg-[#F2D9D3] px-5 py-4 text-[17px] text-[#7a2a1f]"
+        >
+          {{ erreur }}
+        </p>
 
-      <button
-        type="submit"
-        class="mt-6 bg-clay-600 px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-clay-700 disabled:opacity-50"
-        :disabled="enCours"
-      >
-        {{ enCours ? 'Enregistrement…' : 'Enregistrer' }}
-      </button>
-    </form>
+        <button
+          type="submit"
+          class="mt-7 min-h-14 rounded-xl bg-green-700 px-7 text-[18px] font-bold text-white transition-colors hover:bg-green-800 disabled:opacity-40"
+          :disabled="enCours"
+        >
+          {{ enCours ? 'Enregistrement…' : 'Enregistrer' }}
+        </button>
+      </form>
+    </div>
   </AdminShell>
 </template>

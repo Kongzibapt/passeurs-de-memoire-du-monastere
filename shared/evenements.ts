@@ -18,6 +18,7 @@
  */
 
 import { mailto } from '#shared/association'
+import { img } from '#shared/phototheque'
 
 export interface EtapeProgramme {
   /** Heure affichée telle quelle : « 14h30 ». */
@@ -146,14 +147,38 @@ export function aVenir(liste: Evenement[], jour = aujourdhuiISO()): Evenement[] 
 }
 
 /**
+ * L'affiche d'un événement : la première photo de son souvenir.
+ *
+ * Pas de champ à part : une affiche choisie à l'annonce reste ensuite la
+ * première image du souvenir, comme pour les événements d'origine — on n'a pas
+ * à la rechoisir une fois l'événement passé.
+ */
+export function afficheDe(e: Evenement): PhotoSouvenir | undefined {
+  return e.souvenir?.photos[0]
+}
+
+/** Vrai quand le souvenir est raconté — sans récit, il n'est pas publié. */
+export function estRaconte(e: Evenement): boolean {
+  return !!e.souvenir?.recit?.trim()
+}
+
+/**
  * Événements passés porteurs d'un souvenir, dans l'ordre où ils ont eu lieu.
+ *
+ * Un souvenir sans récit n'est pas montré : un événement annoncé avec son
+ * affiche porte déjà une photo, mais rien n'a encore été raconté.
  *
  * L'année, elle, se lit à l'envers (voir `souvenirsParAnnee`) : on descend le
  * temps d'année en année, mais à l'intérieur d'une année on raconte la saison
  * dans l'ordre — c'est la présentation de la maquette, et celle d'un album.
  */
 export function souvenirs(liste: Evenement[], jour = aujourdhuiISO()): Evenement[] {
-  return liste.filter((e) => e.date < jour && !!e.souvenir).sort((a, b) => a.date.localeCompare(b.date))
+  return liste.filter((e) => e.date < jour && estRaconte(e)).sort((a, b) => a.date.localeCompare(b.date))
+}
+
+/** Événements passés, du plus récent au plus ancien — qu'ils soient racontés ou non. */
+export function passes(liste: Evenement[], jour = aujourdhuiISO()): Evenement[] {
+  return liste.filter((e) => e.date < jour).sort((a, b) => b.date.localeCompare(a.date))
 }
 
 /** Regroupe les souvenirs par année, la plus récente d'abord. */
@@ -190,37 +215,37 @@ export const SEED_EVENEMENTS: Evenement[] = [
       question: 'Que faisait un drap mortuaire dans une confrérie de tanneurs ?',
       photos: [
         {
-          src: '/img/affiche-nuit-des-eglises-2026.jpg',
+          src: img('affiche-nuit-des-eglises-2026.jpg'),
           alt: "Affiche de la Nuit des églises 2026 : concert orgue, flûte traversière et chant à l'église Saint-Blaise du Monastère, le 3 juillet à 20h30, entrée libre",
           titre: "L'affiche de la soirée",
           credit: "Affiche de l'association",
         },
         {
-          src: '/img/eglise-nef.jpg',
+          src: img('eglise-nef.jpg'),
           alt: "L'église du Monastère pleine, lors de la Nuit des églises",
           titre: 'La nef, le 3 juillet',
           credit: "Photo de l'association",
         },
         {
-          src: '/img/eglise-retable.jpg',
+          src: img('eglise-retable.jpg'),
           alt: "Le retable doré de l'église pendant la présentation",
           titre: 'Le retable',
           credit: "Photo de l'association",
         },
         {
-          src: '/img/concert-tribune.jpg',
+          src: img('concert-tribune.jpg'),
           alt: "Les musiciens du concert à la tribune d'orgue de l'église du Monastère",
           titre: "Le concert, à la tribune d'orgue",
           credit: "Photo de l'association",
         },
         {
-          src: '/img/conference-art-sacre.jpg',
+          src: img('conference-art-sacre.jpg'),
           alt: "La micro-conférence sur l'art sacré, devant le retable de l'église",
           titre: "La micro-conférence sur l'art sacré",
           credit: "Photo de l'association",
         },
         {
-          src: '/img/eglise-tympan.jpg',
+          src: img('eglise-tympan.jpg'),
           alt: "Le portail de l'église du Monastère",
           titre: 'Le portail',
           credit: "Photo de l'association",
@@ -247,7 +272,7 @@ export const SEED_EVENEMENTS: Evenement[] = [
         "Un stand aux côtés des associations de la commune : rencontres, questions du village, présentation des quatre commissions et premières adhésions signées sur place.",
       photos: [
         {
-          src: '/img/affiche-journee-des-associations-2026.jpg',
+          src: img('affiche-journee-des-associations-2026.jpg'),
           alt: "Affiche des Passeurs de Mémoire : « Vous habitez un village vieux de mille ans », au-dessus d'une vue du Monastère et de son église depuis les hauteurs boisées",
           titre: "L'affiche du stand",
           credit: "Affiche de l'association",

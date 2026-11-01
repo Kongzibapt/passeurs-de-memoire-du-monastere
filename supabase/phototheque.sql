@@ -1,22 +1,18 @@
 -- ───────────────────────────────────────────────────────────────────────────
--- Photothèque : les légendes des images de `public/img/`.
+-- Photothèque : une ligne par image du site.
 --
--- Les FICHIERS ne sont pas ici. Ils sont versionnés avec le site, et leur
--- inventaire est dressé à la construction (shared/phototheque-fichiers.ts) :
--- une image du dépôt ne peut pas disparaître parce qu'un compte de stockage a
--- été fermé, et son ajout se voit dans un commit.
+-- Les fichiers sont dans le bucket `phototheque` (créé plus bas) ; cette table
+-- porte leur adresse, leurs dimensions, et ce qui se dit d'une image et peut
+-- changer sans redéployer : titre, texte alternatif, crédit, mots-clés. Ces
+-- légendes complètent celles écrites dans `shared/phototheque.ts` et l'emportent
+-- sur elles à `src` égal — le même partage que pour les événements et les archives.
 --
--- Cette table ne porte que ce qui se dit d'une image et qui peut changer sans
--- redéployer : son titre, son texte alternatif, son crédit, ses mots-clés. Elle
--- complète les légendes écrites dans `shared/phototheque.ts` et l'emporte sur
--- elles à `src` égal — le même partage que pour les événements et les archives.
---
--- Une ligne dont le `src` ne correspond plus à aucun fichier est simplement
--- ignorée à la lecture : retirer une image du dépôt ne casse rien.
+-- La table n'a d'abord porté que des légendes, pour des fichiers versionnés
+-- dans `public/img/` ; le fonds d'origine a rejoint le bucket en novembre 2026.
 -- ───────────────────────────────────────────────────────────────────────────
 
 create table if not exists public.phototheque (
-  src         text primary key,     -- chemin depuis la racine du site : /img/…
+  src         text primary key,     -- adresse publique complète de l'image
   updated_at  timestamptz not null default now(),
 
   titre       text,                 -- partie en gras de la légende
@@ -30,13 +26,10 @@ create table if not exists public.phototheque (
 alter table public.phototheque enable row level security;
 
 -- ───────────────────────────────────────────────────────────────────────────
--- Photos déposées depuis le back-office.
+-- Les fichiers : bucket public, et ce qu'on sait de chacun.
 --
--- Les images de `public/img/` restent dans le dépôt. Celles qu'on dépose depuis
--- /admin/phototheque ne peuvent pas y aller (la fonction serveur de Vercel
--- n'écrit pas sur disque) : elles vont dans un bucket Supabase Storage public,
--- et leur adresse complète sert de `src`. Cette table garde alors, en plus de la
--- légende, ce que l'inventaire de construction sait des fichiers du dépôt.
+-- `depose` vaut vrai pour toute image du bucket ; `chemin` est sa place dans le
+-- bucket (`historique/…` pour le fonds d'origine, `<année>/…` pour un dépôt).
 -- À rejouer sans risque : tout est `if not exists`.
 -- ───────────────────────────────────────────────────────────────────────────
 

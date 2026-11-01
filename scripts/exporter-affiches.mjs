@@ -4,7 +4,8 @@
  * Les affiches sont dessinées en HTML dans le bundle Claude Design, une planche
  * par `<section class="page">`. On rend la première — celle qui sert d'affiche
  * proprement dite, les suivantes étant le verso ou des variantes — et on
- * l'enregistre dans `public/img/`.
+ * l'enregistre dans `.captures/affiches/`, d'où on la dépose dans
+ * `/admin/phototheque`.
  *
  * Les mentions de travail en cours (« Lieu et horaires à confirmer ») sont
  * retirées au rendu : elles avaient un sens pendant la préparation, elles n'en
@@ -14,14 +15,14 @@
  */
 import { chromium } from '@playwright/test'
 import sharp from 'sharp'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
 
 const ici = dirname(fileURLToPath(import.meta.url))
 const PROJET = resolve(ici, '..', '..', '..', 'project')
-const SORTIE = resolve(ici, '..', 'public', 'img')
+const SORTIE = resolve(ici, '..', '.captures', 'affiches')
 
 /** Largeur d'export : l'affiche s'affiche vers 240 px, × 3 pour les écrans Retina. */
 const LARGEUR = 1100
@@ -37,6 +38,7 @@ const AFFICHES = [
   },
 ]
 
+await mkdir(SORTIE, { recursive: true })
 const provisoire = await mkdtemp(join(tmpdir(), 'affiches-'))
 const navigateur = await chromium.launch()
 

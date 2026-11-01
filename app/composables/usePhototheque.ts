@@ -54,13 +54,6 @@ export function usePhototheque() {
     return image
   }
 
-  /** Oublie la légende saisie : celle du code reprend la main. */
-  async function reinitialiser(src: string): Promise<Image> {
-    const image = await $fetch<Image>('/api/admin/phototheque', { method: 'DELETE', body: { src } })
-    images.value = images.value.map((i) => (i.src === src ? image : i))
-    return image
-  }
-
   /**
    * Dépose une photo : le navigateur la redresse et la réduit, puis l'envoie.
    *
@@ -68,7 +61,7 @@ export function usePhototheque() {
    * de 4,5 Mo, et une photo de téléphone en fait 5 à 10. Passer par un canvas
    * applique aussi l'orientation EXIF aux pixels eux-mêmes — IPX, qui réencode
    * les images du site, ne la lit pas, et une photo prise à la verticale
-   * s'afficherait couchée (voir `scripts/normaliser-images.mjs`).
+   * s'afficherait couchée.
    */
   async function deposer(fichier: File): Promise<Image> {
     const { blob, largeur, hauteur } = await preparer(fichier)
@@ -88,7 +81,7 @@ export function usePhototheque() {
     images.value = images.value.filter((i) => i.src !== src)
   }
 
-  return { images, chargement, charge, erreur, recharger, assurerCharge, enregistrer, reinitialiser, deposer, supprimer }
+  return { images, chargement, charge, erreur, recharger, assurerCharge, enregistrer, deposer, supprimer }
 }
 
 /**

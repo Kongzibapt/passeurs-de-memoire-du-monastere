@@ -1,23 +1,22 @@
 <script setup lang="ts">
-import { chercherImages, formatDimensions, type Image } from '#shared/phototheque'
+import { chercherImages, type Image } from '#shared/phototheque'
 
 /**
- * Le sélecteur d'images du back-office.
+ * Le sélecteur d'images du back-office : une planche des photos déjà déposées,
+ * où l'on touche celles qu'on veut.
  *
- * Il remplace le champ où l'on tapait « /img/eglise-nef.jpg » de mémoire. On
- * choisit dans une planche, et la photo arrive avec son titre, son texte
- * alternatif et son crédit — les trois champs qu'on laisse vides quand il faut
- * les écrire à la main, et dont l'absence ne se voit qu'à l'usage : une image
- * sans `alt` est une image muette pour qui ne la voit pas.
+ * Il remplace le champ où l'on tapait une adresse d'image de mémoire. La photo
+ * arrive avec son titre, son texte alternatif et son crédit — les trois champs
+ * qu'on laisse vides quand il faut les écrire à la main.
  *
- * En choix multiple, l'ordre retenu est celui des clics, pas celui de la
+ * En choix multiple, l'ordre retenu est celui des touches, pas celui de la
  * planche : on compose une suite de photos, on ne coche pas une liste.
  */
 const props = withDefaults(
   defineProps<{
     ouvert: boolean
     multiple?: boolean
-    /** Chemins déjà retenus ailleurs : marqués « déjà là », mais choisissables. */
+    /** Photos déjà retenues ailleurs : marquées « déjà ajoutée », mais choisissables. */
     dejaLa?: string[]
   }>(),
   { multiple: false, dejaLa: () => [] },
@@ -32,7 +31,6 @@ const { images, chargement, erreur, assurerCharge } = usePhototheque()
 
 const recherche = ref('')
 const retenues = ref<string[]>([])
-const champRecherche = ref<HTMLInputElement | null>(null)
 
 watch(
   () => props.ouvert,
@@ -41,8 +39,6 @@ watch(
     retenues.value = []
     recherche.value = ''
     await assurerCharge()
-    await nextTick()
-    champRecherche.value?.focus()
   },
   { immediate: true },
 )
@@ -64,20 +60,6 @@ function cliquer(image: Image) {
     : [...retenues.value, image.src]
 }
 
-/**
- * Une photo déposée depuis le sélecteur est une photo qu'on veut utiliser :
- * en choix simple elle est choisie aussitôt, en choix multiple elle est retenue
- * (dans l'ordre du dépôt) et on valide quand on a fini.
- */
-function apresDepot(deposees: Image[]) {
-  if (!props.multiple) {
-    emit('choisir', [deposees[0]!])
-    fermer()
-    return
-  }
-  retenues.value = [...retenues.value, ...deposees.map((i) => i.src)]
-}
-
 function valider() {
   const choisies = retenues.value
     .map((src) => images.value.find((i) => i.src === src))
@@ -85,68 +67,61 @@ function valider() {
   if (choisies.length) emit('choisir', choisies)
   fermer()
 }
-
-const cadre =
-  'relative overflow-hidden rounded-lg border-2 bg-white text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-clay-600'
 </script>
 
 <template>
   <Teleport to="body">
     <div
       v-if="ouvert"
-      class="fixed inset-0 z-[100] flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center sm:p-6"
+      class="fixed inset-0 z-[100] flex items-end justify-center bg-black/50 sm:items-center sm:p-6"
       role="dialog"
       aria-modal="true"
-      aria-label="Photothèque"
+      aria-label="Choisir parmi vos photos"
       @click.self="fermer"
       @keydown.esc="fermer"
     >
-      <div class="flex max-h-[92vh] w-full max-w-[980px] flex-col overflow-hidden rounded-t-2xl bg-[#f4f5f6] shadow-2xl sm:rounded-2xl">
-        <div class="flex items-start justify-between gap-4 border-b border-black/10 bg-white px-5 py-4">
+      <div class="flex max-h-[94vh] w-full max-w-[1000px] flex-col overflow-hidden rounded-t-2xl bg-[#f4f5f6] shadow-2xl sm:rounded-2xl">
+        <div class="flex items-center justify-between gap-4 border-b border-black/10 bg-white px-6 py-5">
           <div>
-            <h2 class="font-display text-[17px] font-bold">Photothèque</h2>
-            <p class="text-[12.5px] text-slate-500">
-              {{ multiple ? 'Choisis une ou plusieurs images' : 'Choisis une image' }} ·
-              {{ images.length }} image{{ images.length > 1 ? 's' : '' }}
+            <h2 class="font-display text-[24px] font-bold">Choisir parmi vos photos</h2>
+            <p class="mt-1 text-[17px] text-slate-600">
+              {{ multiple ? 'Touchez les photos à ajouter, puis « Ajouter ces photos ».' : 'Touchez la photo à utiliser.' }}
             </p>
           </div>
           <button
             type="button"
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
-            aria-label="Fermer"
+            class="min-h-12 shrink-0 rounded-xl border-2 border-slate-300 px-5 text-[17px] font-semibold text-slate-700 hover:border-slate-500"
             @click="fermer"
           >
-            ✕
+            Fermer
           </button>
         </div>
 
-        <div class="grid gap-3 border-b border-black/10 bg-white px-5 pb-4">
-          <AdminDepotPhotos compact @deposees="apresDepot" />
+        <div class="border-b border-black/10 bg-white px-6 pb-5">
+          <label for="sel-recherche" class="sr-only">Chercher une photo</label>
           <input
-            ref="champRecherche"
+            id="sel-recherche"
             v-model="recherche"
             type="search"
-            placeholder="Chercher : église, pont, carte postale, 2026…"
-            class="w-full rounded-lg border border-black/10 bg-[#f4f5f6] px-3 py-2 text-[14px] focus:border-clay-600 focus:outline-none"
+            placeholder="Chercher une photo : église, pont, 2026…"
+            class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-[18px] outline-none focus:border-clay-600"
           >
         </div>
 
-        <div class="flex-1 overflow-y-auto px-5 py-4">
-          <p v-if="chargement" class="py-10 text-center text-[14px] text-slate-500">Chargement…</p>
-          <p v-else-if="erreur" class="py-10 text-center text-[14px] text-red-700">{{ erreur }}</p>
-          <p v-else-if="!visibles.length" class="py-10 text-center text-[14px] text-slate-500">
-            Aucune image ne correspond à « {{ recherche }} ».
+        <div class="flex-1 overflow-y-auto px-6 py-5">
+          <p v-if="chargement" class="py-10 text-center text-[18px] text-slate-600">Chargement des photos…</p>
+          <p v-else-if="erreur" class="py-10 text-center text-[18px] text-red-800">{{ erreur }}</p>
+          <p v-else-if="!visibles.length" class="py-10 text-center text-[18px] text-slate-600">
+            Aucune photo ne correspond à « {{ recherche }} ».
           </p>
 
-          <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             <button
               v-for="image in visibles"
               :key="image.src"
               type="button"
-              :class="[
-                cadre,
-                retenues.includes(image.src) ? 'border-clay-600' : 'border-transparent hover:border-clay-300',
-              ]"
+              class="relative overflow-hidden rounded-xl border-4 bg-white text-left transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-clay-400"
+              :class="retenues.includes(image.src) ? 'border-clay-600' : 'border-transparent hover:border-clay-300'"
               :aria-pressed="multiple ? retenues.includes(image.src) : undefined"
               @click="cliquer(image)"
             >
@@ -159,42 +134,35 @@ const cadre =
               >
               <span
                 v-if="multiple && retenues.includes(image.src)"
-                class="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-clay-600 text-[12px] font-bold text-white"
+                class="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-clay-600 text-[17px] font-bold text-white"
               >
                 {{ retenues.indexOf(image.src) + 1 }}
               </span>
               <span
                 v-else-if="dejaLa.includes(image.src)"
-                class="absolute right-2 top-2 rounded-full bg-slate-900/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white"
+                class="absolute right-2 top-2 rounded-full bg-slate-900/80 px-3 py-1 text-[14px] font-semibold text-white"
               >
-                déjà là
+                déjà ajoutée
               </span>
-
-              <span class="block px-2.5 py-2">
-                <span class="block truncate text-[13px] font-semibold">{{ image.titre }}</span>
-                <span class="block truncate text-[11px] text-slate-500">{{ formatDimensions(image) }}</span>
-                <span v-if="!image.alt" class="mt-1 block text-[11px] font-semibold text-amber-700">
-                  sans texte alternatif
-                </span>
-              </span>
+              <span class="block px-3 py-2.5 text-[16px] font-semibold leading-snug">{{ image.titre }}</span>
             </button>
           </div>
         </div>
 
         <div
           v-if="multiple"
-          class="flex items-center justify-between gap-4 border-t border-black/10 bg-white px-5 py-3"
+          class="flex flex-wrap items-center justify-between gap-4 border-t border-black/10 bg-white px-6 py-4"
         >
-          <span class="text-[13px] text-slate-500">
-            {{ retenues.length }} image{{ retenues.length > 1 ? 's' : '' }} retenue{{ retenues.length > 1 ? 's' : '' }}
+          <span class="text-[17px] text-slate-600">
+            {{ retenues.length }} photo{{ retenues.length > 1 ? 's' : '' }} choisie{{ retenues.length > 1 ? 's' : '' }}
           </span>
           <button
             type="button"
-            class="rounded-lg bg-clay-600 px-4 py-2 text-[14px] font-semibold text-white transition-colors hover:bg-clay-700 disabled:opacity-50"
+            class="min-h-14 rounded-xl bg-clay-600 px-7 text-[18px] font-bold text-white transition-colors hover:bg-clay-700 disabled:opacity-40"
             :disabled="!retenues.length"
             @click="valider"
           >
-            Ajouter
+            Ajouter ces photos
           </button>
         </div>
       </div>

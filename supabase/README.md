@@ -6,20 +6,20 @@ Supabase (*SQL Editor → New query → coller → Run*), dans cet ordre :
 1. `contact.sql` — archivage des messages du formulaire de contact
 2. `evenements.sql` — les rendez-vous et leurs souvenirs
 3. `archives.sql` — le fonds de cartes postales et photographies
-4. `phototheque.sql` — les légendes des images de `public/img/`
+4. `phototheque.sql` — les images du site (bucket et table)
 5. `reglages.sql` — les quelques valeurs éditables (lien HelloAsso)
 
-## Les images : le dépôt, sauf celles déposées depuis l'admin
+## Les images : toutes dans le bucket `phototheque`
 
-Les photos déposées depuis `/admin/phototheque` sont stockées dans le bucket
-public `phototheque` (créé par `phototheque.sql`). Les images historiques, elles,
-ne sont pas dans Supabase :
+Toutes les images du site sont dans le bucket public `phototheque` (créé par
+`phototheque.sql`) : le fonds d'origine sous `historique/`, les photos déposées
+depuis `/admin/phototheque` sous leur année. La table du même nom porte une
+ligne par fichier — adresse, dimensions — et la légende retouchée au
+back-office.
 
-Les fichiers vivent dans `public/img/`, versionnés avec le site : une carte
-postale est un objet qu'on conserve, et la mettre dans le dépôt la met à l'abri
-d'un compte de stockage fermé. `phototheque.sql` ne porte que ce qui se DIT
-d'une image — titre, texte alternatif, crédit, mots-clés — c'est-à-dire ce qui
-peut changer sans redéployer.
+**Ce bucket n'a pas de copie ailleurs.** Avant de fermer le projet ou de vider
+le bucket, télécharger son contenu : le site affiche ces adresses telles
+quelles, et l'historique git ne garde que le fonds d'origine.
 
 ## Pourquoi aucune table n'a de politique publique
 

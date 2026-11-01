@@ -1,37 +1,61 @@
 /**
- * La photothèque : toutes les images de `public/img/`, avec leur légende.
+ * La photothèque : toutes les images du site, avec leur légende.
+ *
+ * ── Où vivent les fichiers ───────────────────────────────────────────────────
+ * Toutes dans le bucket Supabase Storage `phototheque`, public. Les images du
+ * fonds d'origine y sont rangées sous `historique/` (ce qui était `public/img/`
+ * jusqu'en novembre 2026) ; celles déposées depuis le back-office sous leur
+ * année. Les unes comme les autres se suppriment depuis `/admin/phototheque`.
  *
  * ── Ce qu'elle rassemble ─────────────────────────────────────────────────────
- * Trois choses, tenues séparées parce qu'elles n'ont pas la même durée de vie :
+ * Deux couches de légendes, tenues séparées parce qu'elles n'ont pas la même
+ * durée de vie :
  *
- *   1. l'inventaire du dossier — `phototheque-fichiers.ts`, généré à chaque
- *      construction, qui dit quels fichiers existent et de quelle taille ;
- *   2. les légendes écrites dans le code — `LEGENDES` ci-dessous, reprises des
+ *   1. les légendes écrites dans le code — `LEGENDES` ci-dessous, reprises des
  *      pages qui affichent déjà ces images ;
- *   3. les légendes saisies au back-office — la table Supabase `phototheque`,
+ *   2. les légendes saisies au back-office — la table Supabase `phototheque`,
  *      qui l'emporte sur le code à `src` égal.
+ *
+ * La liste des fichiers, elle, est la table : une ligne par photo.
  *
  * Une image sans légende reste proposée : elle prend un titre déduit de son nom
  * de fichier. Le fonds ne se cache pas parce qu'il n'est pas encore décrit.
  *
  * ── À quoi elle sert ─────────────────────────────────────────────────────────
- * À ne plus taper « /img/eglise-nef.jpg » de mémoire dans le back-office. On
- * choisit la photo dans une planche, et son titre, son texte alternatif et son
- * crédit viennent avec — les trois champs qu'on oublie de remplir quand il faut
- * les écrire à la main.
+ * À ne plus taper une adresse d'image de mémoire dans le back-office. On choisit
+ * la photo dans une planche, et son titre, son texte alternatif et son crédit
+ * viennent avec — les trois champs qu'on oublie de remplir quand il faut les
+ * écrire à la main.
  */
 
-/** Ce que l'inventaire du dossier sait d'un fichier. */
+/**
+ * Adresse publique du bucket. Écrite en dur, et non tirée de `SUPABASE_URL` :
+ * le code des pages s'exécute aussi dans le navigateur, qui ne voit pas les
+ * variables du serveur. Changer de projet Supabase demande de recopier le
+ * bucket ET de changer cette ligne.
+ */
+export const STOCKAGE_IMAGES =
+  'https://qjckyubfvizngqodkvly.supabase.co/storage/v1/object/public/phototheque'
+
+/** Adresse d'une image du fonds d'origine : `img('abbaye.jpg')`. */
+export function img(nom: string): string {
+  return `${STOCKAGE_IMAGES}/historique/${nom}`
+}
+
+/**
+ * La photo de groupe de la section Bureau. Déclarée ici plutôt que dans le
+ * composant : le serveur doit la connaître pour en refuser la suppression.
+ */
+export const PHOTO_BUREAU = img('bureau-membres.jpg')
+
+/** Ce que la photothèque sait d'un fichier. */
 export interface FichierImage {
-  /** Chemin depuis la racine du site : `/img/…`. C'est la clé de tout. */
+  /** Adresse complète de l'image dans le bucket. C'est la clé de tout. */
   src: string
   largeur: number
   hauteur: number
   octets: number
-  /**
-   * Vrai pour une photo déposée depuis le back-office : elle vit dans Supabase
-   * Storage et son `src` est une adresse complète, pas un chemin `/img/…`.
-   */
+  /** Vrai pour toute image du bucket — c'est-à-dire, désormais, toutes. */
   depose?: boolean
 }
 
@@ -67,193 +91,193 @@ const CARTE = "Carte postale, collection de l'association"
  * sélecteur du back-office.
  */
 export const LEGENDES: Record<string, LegendeImage> = {
-  '/img/abbaye-2012.jpg': {
+  [img('abbaye-2012.jpg')]: {
     titre: "L'abbaye en 2012",
     alt: "L'abbaye du Monastère en 2012",
     credit: ASSOCIATION,
     motsCles: ['abbaye', 'coteau', '2012', 'comparateur'],
   },
-  '/img/abbaye-parc.jpg': {
+  [img('abbaye-parc.jpg')]: {
     titre: "L'abbaye depuis le parc",
     alt: "L'abbaye du Monastère, ses deux tours et son parc",
     credit: ASSOCIATION,
     motsCles: ['abbaye', 'parc', 'tours', 'patrimoine'],
   },
-  '/img/abbaye.jpg': {
+  [img('abbaye.jpg')]: {
     titre: "L'abbaye et son allée",
     alt: "Le corps de bâtiment de l'abbaye et ses deux tourelles, au bout du chemin du parc",
     credit: ASSOCIATION,
     motsCles: ['abbaye', 'tourelles', 'allée', 'parc'],
   },
-  '/img/affiche-journee-des-associations-2026.jpg': {
+  [img('affiche-journee-des-associations-2026.jpg')]: {
     titre: "L'affiche du stand",
     alt: "Affiche des Passeurs de Mémoire : « Vous habitez un village vieux de mille ans », au-dessus d'une vue du Monastère et de son église depuis les hauteurs boisées",
     credit: "Affiche de l'association",
     motsCles: ['affiche', 'journée des associations', '2026'],
   },
-  '/img/affiche-nuit-des-eglises-2026.jpg': {
+  [img('affiche-nuit-des-eglises-2026.jpg')]: {
     titre: "L'affiche de la soirée",
     alt: "Affiche de la Nuit des églises 2026 : concert orgue, flûte traversière et chant à l'église Saint-Blaise du Monastère, le 3 juillet à 20h30, entrée libre",
     credit: "Affiche de l'association",
     motsCles: ['affiche', 'nuit des églises', '2026', 'concert'],
   },
-  '/img/archive-abbaye-coteau.jpg': {
+  [img('archive-abbaye-coteau.jpg')]: {
     titre: 'Le Monastère-sous-Rodez',
     alt: 'Carte postale ancienne : le Monastère-sous-Rodez et son abbaye vus du coteau',
     credit: 'E. Carrère imp.-éd., Rodez · ' + CARTE.toLowerCase(),
     motsCles: ['carte postale', 'abbaye', 'coteau', 'archives'],
   },
-  '/img/archive-eglise-village.jpg': {
+  [img('archive-eglise-village.jpg')]: {
     titre: "Le bourg et son église",
     alt: 'Le village du Monastère et son église sur une carte postale ancienne',
     credit: 'Éd. Chéojac · ' + CARTE.toLowerCase(),
     motsCles: ['carte postale', 'église', 'bourg', 'comparateur'],
   },
-  '/img/archive-maisons-riviere.jpg': {
+  [img('archive-maisons-riviere.jpg')]: {
     titre: 'Maisons sur la rivière',
     alt: "Photographie ancienne : maisons et galeries de bois au bord de l'Aveyron",
     credit: CARTE,
     motsCles: ['archives', 'rivière', 'galeries', 'aveyron'],
   },
-  '/img/archive-pont-malzac.jpg': {
+  [img('archive-pont-malzac.jpg')]: {
     titre: 'Le pont du Monastère',
     alt: 'Le pont du Monastère sur une carte postale ancienne',
     credit: 'H. Malzac éd., 12 rue Neuve, Rodez · ' + CARTE.toLowerCase(),
     motsCles: ['carte postale', 'pont', 'comparateur'],
   },
-  '/img/archive-rue.jpg': {
+  [img('archive-rue.jpg')]: {
     titre: 'Une rue du bourg',
     alt: 'Carte postale ancienne : une rue à colombages du Monastère',
     credit: 'Éd. CIM · ' + CARTE.toLowerCase(),
     motsCles: ['carte postale', 'rue', 'colombages', 'archives'],
   },
-  '/img/archive-vieux-pont.jpg': {
+  [img('archive-vieux-pont.jpg')]: {
     titre: 'Le Monastère près Rodez — Vieux Pont',
     alt: 'Carte postale ancienne : le vieux pont du Monastère',
     credit: 'Imp. P. Carrère, Rodez · ' + CARTE.toLowerCase(),
     motsCles: ['carte postale', 'pont', 'archives'],
   },
-  '/img/archive-vue-aerienne.jpg': {
+  [img('archive-vue-aerienne.jpg')]: {
     titre: 'Vue aérienne',
     alt: "Vue aérienne ancienne du village autour de l'église",
     credit: CARTE,
     motsCles: ['archives', 'vue aérienne', 'bourg', 'église'],
   },
-  '/img/archive-vue-generale.jpg': {
+  [img('archive-vue-generale.jpg')]: {
     titre: 'Le Monastère-sur-Rodez',
     alt: 'Carte postale ancienne : vue générale du Monastère-sur-Rodez',
     credit: 'Imp. Carrère, Rodez · ' + CARTE.toLowerCase(),
     motsCles: ['carte postale', 'vue générale', 'archives'],
   },
-  '/img/bourg-coteau-pins.jpg': {
+  [img('bourg-coteau-pins.jpg')]: {
     titre: 'Le bourg entre les pins',
     alt: 'Le village du Monastère vu du coteau, encadré par les branches des pins',
     credit: ASSOCIATION,
     motsCles: ['bourg', 'coteau', 'pins', 'panorama'],
   },
-  '/img/bureau-membres.jpg': {
+  [img('bureau-membres.jpg')]: {
     titre: "Le Bureau et les membres de l'association",
     alt: "Une vingtaine de membres de l'association réunis debout dans une salle, devant un écran de projection",
     credit: ASSOCIATION,
     motsCles: ['bureau', 'membres', 'équipe', 'association', 'groupe'],
   },
-  '/img/concert-tribune.jpg': {
+  [img('concert-tribune.jpg')]: {
     titre: "Le concert, à la tribune d'orgue",
     alt: "Les musiciens du concert à la tribune d'orgue de l'église du Monastère",
     credit: ASSOCIATION,
     motsCles: ['nuit des églises', 'concert', 'orgue', 'tribune', '2026'],
   },
-  '/img/conference-art-sacre.jpg': {
+  [img('conference-art-sacre.jpg')]: {
     titre: "La micro-conférence sur l'art sacré",
     alt: "La micro-conférence sur l'art sacré, devant le retable de l'église",
     credit: ASSOCIATION,
     motsCles: ['nuit des églises', 'conférence', 'art sacré', 'retable', '2026'],
   },
-  '/img/eglise-2026.jpg': {
+  [img('eglise-2026.jpg')]: {
     titre: "L'église depuis le sud",
     alt: "L'église du Monastère vue du côté sud : la nef, son toit de lauzes et la tour-clocher",
     credit: ASSOCIATION,
     motsCles: ['église', 'clocher', 'nef', '2026'],
   },
-  '/img/eglise-facade.jpg': {
+  [img('eglise-facade.jpg')]: {
     titre: 'Le portail nord et son contrefort',
     alt: "Le portail nord de l'église, son contrefort et les baies du clocher au-dessus",
     credit: ASSOCIATION,
     motsCles: ['église', 'portail', 'contrefort', 'clocher'],
   },
-  '/img/eglise-nef.jpg': {
+  [img('eglise-nef.jpg')]: {
     titre: 'La nef, le 3 juillet',
     alt: "L'église du Monastère pleine, lors de la Nuit des églises",
     credit: ASSOCIATION,
     motsCles: ['nuit des églises', 'nef', 'public', '2026'],
   },
-  '/img/eglise-place.jpg': {
+  [img('eglise-place.jpg')]: {
     titre: "L'église, depuis la place",
     alt: "L'église du Monastère vue de la place : clocher, nef et portail",
     credit: ASSOCIATION,
     motsCles: ['église', 'place', 'clocher', 'patrimoine'],
   },
-  '/img/eglise-retable.jpg': {
+  [img('eglise-retable.jpg')]: {
     titre: 'Le retable',
     alt: "Le retable doré de l'église pendant la présentation",
     credit: ASSOCIATION,
     motsCles: ['nuit des églises', 'retable', 'art sacré', '2026'],
   },
-  '/img/eglise-tympan.jpg': {
+  [img('eglise-tympan.jpg')]: {
     titre: 'Le portail',
     alt: "Le portail de l'église du Monastère",
     credit: ASSOCIATION,
     motsCles: ['église', 'portail', 'tympan'],
   },
-  '/img/eglise-village-2026.jpg': {
+  [img('eglise-village-2026.jpg')]: {
     titre: "Le bourg et son église, 2026",
     alt: "Le bourg du Monastère et son église aujourd'hui",
     credit: ASSOCIATION,
     motsCles: ['bourg', 'église', '2026', 'comparateur'],
   },
-  '/img/hero-bourg-coteau.jpg': {
+  [img('hero-bourg-coteau.jpg')]: {
     titre: 'Le bourg vu du coteau',
     alt: 'Le village du Monastère, son clocher et ses toits, vus depuis les hauteurs boisées',
     credit: ASSOCIATION,
     motsCles: ['bourg', 'coteau', 'clocher', 'panorama'],
   },
-  '/img/hero-bourg-crepuscule.jpg': {
+  [img('hero-bourg-crepuscule.jpg')]: {
     titre: 'Le bourg au crépuscule',
     alt: 'Le village du Monastère à la tombée du jour, aperçu entre les feuillages du coteau',
     credit: ASSOCIATION,
     motsCles: ['bourg', 'crépuscule', 'coteau', 'panorama'],
   },
-  '/img/pont-aujourdhui.jpg': {
+  [img('pont-aujourdhui.jpg')]: {
     titre: "Le pont aujourd'hui",
     alt: "Le pont du Monastère aujourd'hui",
     credit: ASSOCIATION,
     motsCles: ['pont', '2026', 'comparateur'],
   },
-  '/img/pont-large.jpg': {
+  [img('pont-large.jpg')]: {
     titre: 'Le pont et les maisons de la rive',
     alt: "Le pont Vieux, ses arches et les maisons de la rive, reflétés dans l'Aveyron",
     credit: ASSOCIATION,
     motsCles: ['pont', 'arches', 'reflet', 'aveyron'],
   },
-  '/img/pont-panorama.jpg': {
+  [img('pont-panorama.jpg')]: {
     titre: 'Le pont Vieux et son reflet',
     alt: "Le pont Vieux du Monastère et ses arches reflétées dans l'Aveyron",
     credit: "Photo de l'association, août 2026",
     motsCles: ['pont', 'arches', 'reflet', 'panorama', '2026'],
   },
-  '/img/pont-vertical.jpg': {
+  [img('pont-vertical.jpg')]: {
     titre: 'Le pont, en hauteur',
     alt: "Le pont Vieux et les maisons de la rive, cadrés en hauteur au-dessus de l'Aveyron",
     credit: ASSOCIATION,
     motsCles: ['pont', 'portrait', 'aveyron'],
   },
-  '/img/rue-colombages.jpg': {
+  [img('rue-colombages.jpg')]: {
     titre: 'Une façade à colombages',
     alt: "Une maison à pan-de-bois et encorbellement, dans une rue du bourg",
     credit: ASSOCIATION,
     motsCles: ['rue', 'colombages', 'pan-de-bois', 'bourg'],
   },
-  '/img/vue-bourg-coteau.jpg': {
+  [img('vue-bourg-coteau.jpg')]: {
     titre: 'Le village et son clocher',
     alt: 'Le village du Monastère, son clocher et ses toits, vus du coteau',
     credit: ASSOCIATION,
@@ -264,7 +288,7 @@ export const LEGENDES: Record<string, LegendeImage> = {
 /**
  * Titre de repli, déduit du nom de fichier.
  *
- * `/img/archive-vieux-pont.jpg` → « Archive vieux pont ». Ce n'est pas une
+ * `…/historique/archive-vieux-pont.jpg` → « Archive vieux pont ». Ce n'est pas une
  * légende, mais c'est lisible dans une planche, et ça vaut mieux que le chemin
  * brut pour une image que personne n'a encore décrite.
  */
@@ -275,11 +299,11 @@ export function titreParDefaut(src: string): string {
 }
 
 /**
- * Assemble l'inventaire, les légendes du code et celles de la base.
+ * Assemble les fichiers, les légendes du code et celles de la base.
  *
  * L'ordre est celui de la priorité : la base l'emporte sur le code, le code sur
- * le repli. Une ligne de base qui désigne un fichier disparu est ignorée — on
- * ne propose pas une image que le dossier ne contient plus.
+ * le repli. Une légende du code dont la photo a été supprimée est ignorée — on
+ * ne propose pas une image que le bucket ne contient plus.
  */
 export function composerPhototheque(
   fichiers: FichierImage[],

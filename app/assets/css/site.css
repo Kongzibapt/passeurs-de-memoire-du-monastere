@@ -225,6 +225,7 @@ sup{font-size:.7em;line-height:0;vertical-align:.35em}
 .evt{display:grid;grid-template-columns:9rem 1fr auto;gap:clamp(1.25rem,3vw,2.5rem);align-items:start;padding-block:var(--sp-5);border-bottom:1px solid var(--color-border)}
 .evt .when{font-family:var(--font-accent);font-style:italic;color:var(--c-clay-700);font-size:var(--fs-lg);line-height:1.2}
 .evt .when small{display:block;font-family:var(--font-mono);font-style:normal;font-size:.6875rem;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-muted);margin-top:.375rem}
+.evt-affiche{display:block;width:100%;max-width:9rem;height:auto;margin-top:var(--sp-3);border:1px solid var(--color-border)}
 .evt h3{font-size:var(--fs-lg)}
 .evt p{color:var(--color-text-muted);font-size:var(--fs-sm);margin-top:.375rem;max-width:58ch}
 .prog{display:grid;grid-template-columns:auto 1fr;gap:.375rem 1rem;margin-top:var(--sp-4);max-width:52ch;font-size:var(--fs-sm)}

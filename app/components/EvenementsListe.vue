@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { aVenir, estLienExterne, hrefCta, libelleDate, type Evenement } from '#shared/evenements'
+import { afficheDe, aVenir, estLienExterne, hrefCta, libelleDate, type Evenement } from '#shared/evenements'
 
 /**
  * La liste des rendez-vous à venir, dans ses deux tenues.
@@ -8,7 +8,8 @@ import { aVenir, estLienExterne, hrefCta, libelleDate, type Evenement } from '#s
  *   page Actualités. C'est un aperçu, pas la page. La date, elle, s'écrit
  *   pareil partout : elle est calculée, jamais saisie.
  * - `actualites` : titre complet, présentation détaillée, programme horaire
- *   quand il y en a un, et le bouton propre à l'événement.
+ *   quand il y en a un, l'affiche sous la date, et le bouton propre à
+ *   l'événement.
  *
  * Un événement dont la date est passée n'apparaît jamais ici : `aVenir` le
  * filtre, comme le faisait `evts.js` dans la maquette. Le site ne peut donc
@@ -39,6 +40,15 @@ const liste = computed(() => {
         <div class="when">
           {{ libelleDate(e.date) }}
           <small>{{ e.cadre }}</small>
+          <NuxtImg
+            v-if="variante === 'actualites' && afficheDe(e)"
+            class="evt-affiche"
+            :src="afficheDe(e)!.src"
+            :alt="afficheDe(e)!.alt"
+            loading="lazy"
+            decoding="async"
+            sizes="xs:144px md:144px"
+          />
         </div>
 
         <div>

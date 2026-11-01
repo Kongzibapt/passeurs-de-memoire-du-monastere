@@ -7,6 +7,8 @@
  * transporte que des exposants de siècle (`XIV<sup>e</sup>`) et des guillemets.
  */
 
+import { img } from '#shared/phototheque'
+
 export interface Monument {
   /** Clé de liaison avec le comparateur « autrefois / aujourd'hui ». */
   cle: 'abbaye' | 'eglise' | 'pont'
@@ -46,7 +48,7 @@ export const MONUMENTS: Monument[] = [
     ],
     lienDetail: "L'abbaye autrefois et aujourd'hui",
     image: {
-      src: '/img/abbaye-parc.jpg',
+      src: img('abbaye-parc.jpg'),
       alt: "L'abbaye du Monastère, ses deux tours et son parc",
       titre: "L'abbaye depuis le parc",
       legende: 'La façade sud et ses deux tours.',
@@ -65,7 +67,7 @@ export const MONUMENTS: Monument[] = [
     ],
     lienDetail: "L'église autrefois et aujourd'hui",
     image: {
-      src: '/img/eglise-place.jpg',
+      src: img('eglise-place.jpg'),
       alt: "L'église du Monastère vue de la place : clocher, nef et portail",
       titre: "L'église, depuis la place",
       legende: 'Le clocher, le portail nord et le niveau de refuge au-dessus de la nef.',
@@ -85,7 +87,7 @@ export const MONUMENTS: Monument[] = [
     ],
     lienDetail: "Le pont autrefois et aujourd'hui",
     image: {
-      src: '/img/pont-panorama.jpg',
+      src: img('pont-panorama.jpg'),
       alt: "Le pont Vieux du Monastère et ses arches reflétées dans l'Aveyron",
       titre: 'Le pont Vieux et son reflet',
       legende: "Cinq arches en plein cintre sur l'Aveyron, en amont du bourg.",

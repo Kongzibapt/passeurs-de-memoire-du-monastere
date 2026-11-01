@@ -40,26 +40,12 @@ const outils = [
   {
     to: '/admin/evenements',
     titre: 'Événements',
-    texte:
-      "Annoncer un rendez-vous, corriger une date, écrire le souvenir d'une soirée passée. Un événement bascule tout seul dans « C'était chez nous » le lendemain de sa date.",
-  },
-  {
-    to: '/admin/archives',
-    titre: 'Archives',
-    texte:
-      'Ajouter au fonds les cartes postales et photographies retrouvées, avec leur légende et leur provenance.',
+    texte: "Annoncer un prochain rendez-vous, ou raconter celui qui vient d'avoir lieu.",
   },
   {
     to: '/admin/phototheque',
     titre: 'Photothèque',
-    texte:
-      "Toutes les images du site, avec leur titre, leur crédit et leur description. C'est là qu'on les choisit pour un événement ou une archive, plutôt que d'en taper le chemin de mémoire.",
-  },
-  {
-    to: '/admin/reglages',
-    titre: 'Réglages',
-    texte:
-      "Le lien HelloAsso de la campagne d'adhésion en cours — celui que portent tous les boutons « Adhérer » du site.",
+    texte: "Ajouter les photos de l'association, et retrouver celles déjà déposées.",
   },
 ]
 </script>
@@ -105,24 +91,25 @@ const outils = [
   </div>
 
   <!-- Tableau de bord -->
-  <AdminShell v-else :retour="false">
-    <h1 class="font-display text-[28px] font-bold tracking-tight">Tableau de bord</h1>
-    <p class="mt-2 max-w-[60ch] text-[15px] text-slate-600">
-      Ce qui est modifié ici apparaît sur le site dans la minute. Le contenu d'origine reste
-      toujours en place : le modifier revient à publier une version qui le remplace.
-    </p>
+  <AdminShell v-else>
+    <div class="mx-auto max-w-[900px]">
+      <h1 class="font-display text-[32px] font-bold">Bonjour !</h1>
+      <p class="mt-2 text-[19px] text-slate-600">
+        Que souhaitez-vous faire ? Ce que vous publiez ici apparaît sur le site dans la minute.
+      </p>
 
-    <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      <NuxtLink
-        v-for="outil in outils"
-        :key="outil.to"
-        :to="outil.to"
-        class="block border border-black/10 bg-white p-6 transition-shadow hover:shadow-lg"
-      >
-        <h2 class="font-display text-[18px] font-bold">{{ outil.titre }}</h2>
-        <p class="mt-2 text-[14px] leading-relaxed text-slate-600">{{ outil.texte }}</p>
-        <span class="mt-4 inline-block text-[14px] font-semibold text-clay-700">Ouvrir →</span>
-      </NuxtLink>
+      <div class="mt-8 grid gap-6 sm:grid-cols-2">
+        <NuxtLink
+          v-for="outil in outils"
+          :key="outil.to"
+          :to="outil.to"
+          class="block rounded-2xl border-2 border-slate-200 bg-white p-8 transition-colors hover:border-clay-500"
+        >
+          <h2 class="font-display text-[26px] font-bold">{{ outil.titre }}</h2>
+          <p class="mt-3 text-[18px] leading-relaxed text-slate-600">{{ outil.texte }}</p>
+          <span class="mt-6 inline-block text-[19px] font-bold text-clay-700">Ouvrir →</span>
+        </NuxtLink>
+      </div>
     </div>
   </AdminShell>
 </template>

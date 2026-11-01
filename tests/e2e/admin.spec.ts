@@ -14,7 +14,7 @@ test.describe('Back-office', () => {
   })
 
   test('les sous-pages renvoient vers la connexion', async ({ page }) => {
-    for (const chemin of ['/admin/evenements', '/admin/archives', '/admin/phototheque', '/admin/reglages']) {
+    for (const chemin of ['/admin/evenements', '/admin/phototheque', '/admin/reglages']) {
       await page.goto(chemin)
       await expect(page).toHaveURL(/\/admin$/)
     }

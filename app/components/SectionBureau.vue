@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LEGENDES } from '#shared/phototheque'
+import { LEGENDES, PHOTO_BUREAU } from '#shared/phototheque'
 
 /**
  * Le Bureau et les membres de l'association, en une photo de groupe.
@@ -8,7 +8,7 @@ import { LEGENDES } from '#shared/phototheque'
  * La légende vient de la photothèque, pour que la photo se présente de la même
  * façon ici et dans le sélecteur du back-office.
  */
-const SRC = '/img/bureau-membres.jpg'
+const SRC = PHOTO_BUREAU
 const photo = LEGENDES[SRC]!
 
 const BUREAU = [

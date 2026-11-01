@@ -9,6 +9,8 @@
  * maquette.
  */
 
+import { img } from './phototheque'
+
 export interface Archive {
   /** `seed:<index>` pour le contenu du code, uuid pour la base. */
   id: string
@@ -42,7 +44,7 @@ export function trierArchives(liste: Archive[]): Archive[] {
 export const SEED_ARCHIVES: Archive[] = [
   {
     id: 'seed:vue-generale',
-    src: '/img/archive-vue-generale.jpg',
+    src: img('archive-vue-generale.jpg'),
     alt: 'Carte postale ancienne : vue générale du Monastère-sur-Rodez',
     titre: 'Le Monastère-sur-Rodez',
     legende: '· vue générale · imp. Carrère, Rodez',
@@ -51,7 +53,7 @@ export const SEED_ARCHIVES: Archive[] = [
   },
   {
     id: 'seed:vieux-pont',
-    src: '/img/archive-vieux-pont.jpg',
+    src: img('archive-vieux-pont.jpg'),
     alt: 'Carte postale ancienne : le vieux pont du Monastère',
     titre: 'Le Monastère près Rodez — Vieux Pont',
     legende: '· imp. P. Carrère, Rodez',
@@ -60,7 +62,7 @@ export const SEED_ARCHIVES: Archive[] = [
   },
   {
     id: 'seed:rue',
-    src: '/img/archive-rue.jpg',
+    src: img('archive-rue.jpg'),
     alt: 'Carte postale ancienne : une rue à colombages du Monastère',
     titre: 'Une rue du bourg',
     legende: '· maisons à colombages · éd. CIM',
@@ -69,7 +71,7 @@ export const SEED_ARCHIVES: Archive[] = [
   },
   {
     id: 'seed:vue-aerienne',
-    src: '/img/archive-vue-aerienne.jpg',
+    src: img('archive-vue-aerienne.jpg'),
     alt: "Vue aérienne ancienne du village autour de l'église",
     titre: 'Vue aérienne',
     legende: "· le bourg autour de l'église",
@@ -78,7 +80,7 @@ export const SEED_ARCHIVES: Archive[] = [
   },
   {
     id: 'seed:maisons-riviere',
-    src: '/img/archive-maisons-riviere.jpg',
+    src: img('archive-maisons-riviere.jpg'),
     alt: "Photographie ancienne : maisons et galeries de bois au bord de l'Aveyron",
     titre: 'Maisons sur la rivière',
     legende: "· galeries de bois au-dessus de l'eau",
@@ -87,7 +89,7 @@ export const SEED_ARCHIVES: Archive[] = [
   },
   {
     id: 'seed:abbaye-coteau',
-    src: '/img/archive-abbaye-coteau.jpg',
+    src: img('archive-abbaye-coteau.jpg'),
     alt: 'Carte postale ancienne : le Monastère-sous-Rodez et son abbaye vus du coteau',
     titre: 'Le Monastère-sous-Rodez',
     legende: "L'abbaye vue du coteau. E. Carrère imp.-éd., Rodez.",

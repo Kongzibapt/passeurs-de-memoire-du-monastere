@@ -11,10 +11,10 @@
  * retirait les `.evt` périmés au chargement : le site ne peut donc pas annoncer
  * une date dépassée, même sans intervention.
  *
- * `SEED_EVENEMENTS` est le contenu de la maquette. Il reste toujours affiché
- * (voir server/utils/evenements.ts) ; la base Supabase vient s'y ajouter, et
- * l'emporte à `slug` égal — le back-office peut donc corriger un événement
- * fondateur sans redéploiement.
+ * `SEED_EVENEMENTS` est le contenu de la maquette, recopié en base. Il ne
+ * s'affiche plus que si la base est absente ou injoignable (voir
+ * server/utils/evenements.ts) : en production, tout événement est une ligne de
+ * la table, qui se modifie et se supprime depuis le back-office.
  */
 
 import { mailto } from '#shared/association'

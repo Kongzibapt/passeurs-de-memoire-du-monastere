@@ -11,9 +11,9 @@ import { messageErreur } from '~/composables/useEvenementsAdmin'
  * prend toute la page : une seule chose à faire à la fois, et la liste revient
  * une fois publié.
  *
- * Les événements « d'origine » (définis dans le code) se modifient comme les
- * autres : les publier crée en base une version qui les remplace sur le site.
- * Ils ne se suppriment pas.
+ * Tout événement est une ligne en base, et se supprime. Le bouton n'apparaît
+ * pas pour un événement « d'origine » (`source: 'seed'`), qu'on ne voit ici
+ * que si la base est injoignable.
  */
 definePageMeta({ middleware: 'admin' })
 

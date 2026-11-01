@@ -11,12 +11,15 @@ import { getSupabaseServer, requireSupabase, tableAbsente } from './supabase'
 /**
  * Couche d'accès aux événements.
  *
- * Le site public fusionne DEUX sources : les événements de la maquette
- * (`SEED_EVENEMENTS`, toujours présents) et ceux créés dans le back-office
- * (table Supabase `evenements`). À `slug` égal, la base l'emporte. Ainsi :
- *  - sans Supabase (développement, tests), le site affiche le contenu du code ;
- *  - en production, ajouter un rendez-vous enrichit le site sans redéploiement,
- *    et corriger un événement fondateur se fait en créant une ligne de même slug.
+ * Dès que la table Supabase `evenements` se lit, elle est la SEULE source :
+ * chaque événement y est une ligne, qui se modifie et se supprime depuis le
+ * back-office. Les événements de la maquette (`SEED_EVENEMENTS`) y ont été
+ * recopiés en novembre 2026 ; ils ne servent plus que de secours quand la base
+ * est absente ou injoignable (développement, tests, panne).
+ *
+ * Avant, les deux sources étaient fusionnées, la base l'emportant à `slug`
+ * égal. Un événement d'origine ne pouvait donc pas disparaître : supprimer sa
+ * ligne faisait réapparaître la version du code.
  *
  * Aucune lecture ne lève : une page publique doit s'afficher même si la base est
  * indisponible ou la table pas encore créée.
@@ -97,30 +100,23 @@ export function versLigneEvenement(input: EvenementInput): Record<string, unknow
   return p
 }
 
-async function lireBase(): Promise<Evenement[]> {
+/** Les lignes de la table, ou `null` si la base ne se lit pas. */
+async function lireBase(): Promise<Evenement[] | null> {
   const supabase = getSupabaseServer()
-  if (!supabase) return []
+  if (!supabase) return null
   const { data, error } = await supabase.from(EVENEMENTS_TABLE).select('*')
   if (error) {
     if (!tableAbsente(error)) {
       console.error('[evenements] lecture Supabase impossible, repli sur le code :', error.message)
     }
-    return []
+    return null
   }
   return (data ?? []).map(mapRow)
 }
 
-/** Fusionne maquette + base (la base l'emporte à slug égal). */
-function fusionner(seed: Evenement[], db: Evenement[]): Evenement[] {
-  const parSlug = new Map<string, Evenement>()
-  for (const e of seed) parSlug.set(e.slug, e)
-  for (const e of db) parSlug.set(e.slug, e)
-  return [...parSlug.values()]
-}
-
 /** Tous les événements visibles publiquement (le tri à venir / passé se fait à l'affichage). */
 export async function getEvenementsPublics(): Promise<Evenement[]> {
-  return fusionner(SEED_EVENEMENTS, await lireBase())
+  return (await lireBase()) ?? SEED_EVENEMENTS
 }
 
 /** Idem, pour le back-office : même liste, mais on garde la provenance. */

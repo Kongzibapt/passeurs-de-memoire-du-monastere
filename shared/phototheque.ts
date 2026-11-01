@@ -28,6 +28,11 @@ export interface FichierImage {
   largeur: number
   hauteur: number
   octets: number
+  /**
+   * Vrai pour une photo déposée depuis le back-office : elle vit dans Supabase
+   * Storage et son `src` est une adresse complète, pas un chemin `/img/…`.
+   */
+  depose?: boolean
 }
 
 /** Ce qu'on peut dire d'une image, dans le code ou depuis le back-office. */

@@ -65,6 +65,18 @@ test.describe('Photothèque', () => {
     expect(retouchee.alt).toBe(LEGENDES['/img/abbaye.jpg']!.alt)
   })
 
+  test('une photo déposée garde son adresse complète, sa légende et son marquage', () => {
+    const url = 'https://exemple.supabase.co/storage/v1/object/public/phototheque/2026/nef-ab12cd.jpg'
+    const [image] = composerPhototheque(
+      [{ src: url, largeur: 2400, hauteur: 1600, octets: 900_000, depose: true }],
+      { [url]: { titre: 'Nef', alt: "L'église pleine" } },
+    )
+    expect(image!.depose).toBe(true)
+    expect(image!.src).toBe(url)
+    expect(image!.titre).toBe('Nef')
+    expect(image!.source).toBe('base')
+  })
+
   test('la recherche ignore les accents et croise les mots', () => {
     const images = composerPhototheque(FICHIERS_IMAGES)
     const eglises = chercherImages(images, 'eglise')

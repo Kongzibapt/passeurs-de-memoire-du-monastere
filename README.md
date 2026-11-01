@@ -184,6 +184,26 @@ versionné : un diff montre les images ajoutées ou retirées.
 npm run phototheque   # après avoir déposé des images ; `npm run build` le fait seul
 ```
 
+### Déposer des photos depuis le back-office
+
+`/admin/phototheque` (et le sélecteur d'images des événements et des archives)
+accepte des photos glissées-déposées. Elles ne peuvent pas entrer dans le dépôt —
+la fonction serveur de Vercel n'écrit pas sur disque — et vont donc dans un
+**bucket Supabase Storage public**, `phototheque`. C'est la seule exception au
+« les images vivent dans le dépôt » : les images historiques de `public/img/`
+restent versionnées et ne se suppriment pas depuis l'admin ; les photos déposées
+se suppriment, puisque leur ajout n'a laissé aucune trace dans git.
+
+- Le navigateur **redresse (EXIF) et réduit** chaque photo avant l'envoi
+  (2 400 px max, JPEG) : Vercel refuse les corps de requête au-delà de 4,5 Mo, et
+  IPX ignore l'orientation EXIF.
+- Une photo déposée est inscrite dans la table `phototheque` avec sa légende et
+  son adresse complète pour `src`. Elle est utilisable aussitôt dans un
+  événement ou une archive.
+- Mise en route : rejouer `supabase/phototheque.sql` (colonnes ajoutées et bucket
+  créé, sans risque pour l'existant). L'hôte de `SUPABASE_URL` est déclaré
+  automatiquement dans `image.domains` pour que `@nuxt/image` l'optimise.
+
 Les **légendes** se répartissent en trois couches, de la plus forte à la plus
 faible : la table Supabase `phototheque` (saisie au back-office), les légendes
 écrites dans `shared/phototheque.ts` (reprises des pages qui affichent déjà ces

@@ -5,10 +5,9 @@ import type { Image } from '#shared/phototheque'
 /**
  * Gestion du fonds d'archives.
  *
- * Les images ne sont pas téléversées ici : on saisit leur chemin. Les fichiers
- * du fonds vivent dans `public/img/`, versionnés avec le site — un document
- * d'archives est un objet qu'on garde, pas un contenu jetable, et le
- * versionner évite qu'il disparaisse avec un compte de stockage.
+ * Les images se choisissent dans la photothèque, où l'on peut aussi en déposer.
+ * Celles de `public/img/` sont versionnées avec le site ; les photos déposées
+ * vivent dans Supabase Storage (voir `server/utils/phototheque.ts`).
  */
 definePageMeta({ middleware: 'admin' })
 
@@ -29,9 +28,8 @@ const enregistrement = ref(false)
 /**
  * L'image se choisit dans la photothèque, et arrive avec son texte alternatif.
  *
- * Le chemin reste saisissable à côté : un document tout juste déposé dans
- * `public/img/` n'entre dans la planche qu'après `npm run phototheque`, et on
- * doit pouvoir le référencer sans attendre.
+ * Le chemin reste saisissable à côté, pour un fichier qu'on vient d'ajouter à
+ * `public/img/` et que l'inventaire de construction ne connaît pas encore.
  */
 const selecteurOuvert = ref(false)
 
@@ -158,12 +156,8 @@ const etiquette = 'block text-[11px] font-bold uppercase tracking-[0.12em] text-
             >
           </div>
           <p class="mt-1 text-[12px] leading-relaxed text-slate-500">
-            Pour ajouter une image au fonds : déposer le fichier dans
-            <code class="font-mono">public/img/</code> du dépôt, lancer
-            <code class="font-mono">npm run images</code> — une photo prise à la verticale
-            s'affiche droite sur l'ordinateur mais couchée sur le site tant qu'on ne l'a pas
-            redressée pour de bon — puis <code class="font-mono">npm run phototheque</code> pour
-            qu'elle apparaisse dans la planche ci-dessus.
+            Pour ajouter une image au fonds : « Choisir dans la photothèque », puis la déposer
+            depuis la fenêtre qui s'ouvre. Elle est redressée et réduite automatiquement.
           </p>
         </div>
 

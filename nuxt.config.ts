@@ -17,6 +17,16 @@ const description =
   "Mettre en valeur et protéger le patrimoine du Monastère (Aveyron) : l'abbaye, l'église " +
   "et le pont Vieux. Du IXe au XXIe siècle, sur les rives de l'Aveyron."
 
+// Hôte de Supabase Storage : les photos déposées depuis le back-office y sont
+// servies par adresse complète, et @nuxt/image n'optimise une image distante
+// que si son domaine est déclaré.
+const hotesImages: string[] = []
+try {
+  if (process.env.SUPABASE_URL) hotesImages.push(new URL(process.env.SUPABASE_URL).hostname)
+} catch {
+  // SUPABASE_URL mal formée : pas de domaine à autoriser, le reste du site tourne.
+}
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-01',
@@ -31,6 +41,7 @@ export default defineNuxtConfig({
 
   // Optimisation d'images : AVIF/WebP + srcset responsive générés à la volée.
   image: {
+    domains: hotesImages,
     format: ['avif', 'webp'],
     quality: 82,
     // Breakpoints du srcset : les valeurs par défaut s'arrêtent à 1536px,

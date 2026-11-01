@@ -29,6 +29,11 @@ test.describe('Back-office', () => {
       page.request.post('/api/admin/archives', { data: { src: '/x.jpg', titre: 'x' } }),
       page.request.patch('/api/admin/reglages', { data: { url_adhesion: 'https://helloasso.com/x' } }),
       page.request.patch('/api/admin/phototheque', { data: { src: '/img/abbaye.jpg', titre: 'x' } }),
+      page.request.post('/api/admin/phototheque/depot?nom=x.jpg', {
+        headers: { 'Content-Type': 'image/jpeg' },
+        data: Buffer.from([0xff, 0xd8, 0xff]),
+      }),
+      page.request.delete('/api/admin/phototheque/fichier', { data: { src: 'https://x/y.jpg' } }),
       page.request.delete('/api/admin/evenements/quelconque'),
     ]
     for (const reponse of await Promise.all(appels)) {

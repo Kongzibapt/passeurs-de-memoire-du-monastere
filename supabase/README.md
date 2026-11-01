@@ -9,7 +9,11 @@ Supabase (*SQL Editor → New query → coller → Run*), dans cet ordre :
 4. `phototheque.sql` — les légendes des images de `public/img/`
 5. `reglages.sql` — les quelques valeurs éditables (lien HelloAsso)
 
-## Aucune image n'est stockée dans Supabase
+## Les images : le dépôt, sauf celles déposées depuis l'admin
+
+Les photos déposées depuis `/admin/phototheque` sont stockées dans le bucket
+public `phototheque` (créé par `phototheque.sql`). Les images historiques, elles,
+ne sont pas dans Supabase :
 
 Les fichiers vivent dans `public/img/`, versionnés avec le site : une carte
 postale est un objet qu'on conserve, et la mettre dans le dépôt la met à l'abri

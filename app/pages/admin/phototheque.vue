@@ -4,11 +4,10 @@ import { chercherImages, formatDimensions, type Image } from '#shared/photothequ
 /**
  * La photothèque : toutes les images du site, et ce qu'on en dit.
  *
- * On n'y téléverse pas. Les fichiers vivent dans `public/img/`, versionnés avec
- * le site : une photo d'archives est un objet qu'on conserve, et la mettre dans
- * le dépôt la met à l'abri d'un compte de stockage fermé. Pour en ajouter, on
- * dépose le fichier dans le dossier et on relance `npm run phototheque` — la
- * construction le fait d'elle-même.
+ * Deux provenances, qu'on ne voit pas dans la planche mais qui ne vivent pas
+ * pareil. Les images de `public/img/` sont versionnées avec le site : elles ne se
+ * suppriment pas d'ici. Les photos DÉPOSÉES ici vont dans Supabase Storage, et se
+ * suppriment — c'est la seule façon d'enlever une erreur de manipulation.
  *
  * Ce qui se modifie ici, ce sont les LÉGENDES : titre, texte alternatif,
  * crédit, mots-clés. Elles servent partout où l'on choisit une image, et le
@@ -19,7 +18,7 @@ definePageMeta({ middleware: 'admin' })
 
 useHead({ title: 'Photothèque — Back-office' })
 
-const { images, chargement, erreur, assurerCharge, enregistrer, reinitialiser } = usePhototheque()
+const { images, chargement, erreur, assurerCharge, enregistrer, reinitialiser, supprimer } = usePhototheque()
 
 await assurerCharge()
 
@@ -43,6 +42,32 @@ function ouvrir(image: Image) {
   }
   message.value = ''
   soucis.value = ''
+}
+
+/** Les photos qu'on vient de déposer sont à légender : on ouvre la première. */
+function apresDepot(deposees: Image[]) {
+  message.value = ''
+  soucis.value = ''
+  ouvrir(deposees[0]!)
+  message.value = deposees.length > 1
+    ? `${deposees.length} photos déposées — pense à légender chacune.`
+    : 'Photo déposée — ajoute son texte alternatif.'
+}
+
+async function retirer() {
+  const image = choisie.value
+  if (!image?.depose) return
+  if (!confirm(`Supprimer « ${image.titre} » ? Si un événement ou une archive l'affiche, la photo y manquera.`)) return
+  enCours.value = true
+  soucis.value = ''
+  try {
+    await supprimer(image.src)
+    choisie.value = null
+  } catch (e: unknown) {
+    soucis.value = messageErreur(e)
+  } finally {
+    enCours.value = false
+  }
 }
 
 function fermer() {
@@ -117,9 +142,9 @@ const etiquette = 'block text-[12px] font-semibold uppercase tracking-wider text
         <div>
           <h1 class="font-display text-[26px] font-bold">Photothèque</h1>
           <p class="mt-1 max-w-[62ch] text-[14px] text-slate-600">
-            Les {{ images.length }} images de <code>public/img/</code>, telles qu'elles seront
-            proposées au moment de composer un événement ou une archive. On ne téléverse pas ici :
-            on dépose le fichier dans le dossier, et la construction l'inventorie.
+            Les {{ images.length }} images du site, telles qu'elles sont proposées au moment de
+            composer un événement ou une archive. Dépose les nouvelles photos ci-dessous : elles
+            sont réduites, rangées ici, et aussitôt disponibles partout.
           </p>
         </div>
         <p
@@ -130,6 +155,8 @@ const etiquette = 'block text-[12px] font-semibold uppercase tracking-wider text
           pour qui ne voit pas l'écran.
         </p>
       </header>
+
+      <AdminDepotPhotos class="mt-6" @deposees="apresDepot" />
 
       <input
         v-model="recherche"
@@ -168,6 +195,12 @@ const etiquette = 'block text-[12px] font-semibold uppercase tracking-wider text
                 class="rounded-full bg-clay-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-clay-800"
               >
                 légende retouchée
+              </span>
+              <span
+                v-if="image.depose"
+                class="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-sky-900"
+              >
+                déposée
               </span>
               <span
                 v-if="!image.alt"
@@ -259,7 +292,16 @@ const etiquette = 'block text-[12px] font-semibold uppercase tracking-wider text
                   Copier le chemin
                 </button>
                 <button
-                  v-if="choisie.source === 'base'"
+                  v-if="choisie.depose"
+                  type="button"
+                  class="text-[13px] text-[#A23A2A] underline transition-colors hover:text-red-900"
+                  :disabled="enCours"
+                  @click="retirer"
+                >
+                  Supprimer la photo
+                </button>
+                <button
+                  v-else-if="choisie.source === 'base'"
                   type="button"
                   class="text-[13px] text-slate-500 underline transition-colors hover:text-slate-900"
                   :disabled="enCours"

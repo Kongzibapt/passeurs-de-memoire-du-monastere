@@ -64,6 +64,20 @@ function cliquer(image: Image) {
     : [...retenues.value, image.src]
 }
 
+/**
+ * Une photo déposée depuis le sélecteur est une photo qu'on veut utiliser :
+ * en choix simple elle est choisie aussitôt, en choix multiple elle est retenue
+ * (dans l'ordre du dépôt) et on valide quand on a fini.
+ */
+function apresDepot(deposees: Image[]) {
+  if (!props.multiple) {
+    emit('choisir', [deposees[0]!])
+    fermer()
+    return
+  }
+  retenues.value = [...retenues.value, ...deposees.map((i) => i.src)]
+}
+
 function valider() {
   const choisies = retenues.value
     .map((src) => images.value.find((i) => i.src === src))
@@ -93,7 +107,7 @@ const cadre =
             <h2 class="font-display text-[17px] font-bold">Photothèque</h2>
             <p class="text-[12.5px] text-slate-500">
               {{ multiple ? 'Choisis une ou plusieurs images' : 'Choisis une image' }} ·
-              {{ images.length }} fichier{{ images.length > 1 ? 's' : '' }} dans <code>public/img/</code>
+              {{ images.length }} image{{ images.length > 1 ? 's' : '' }}
             </p>
           </div>
           <button
@@ -106,7 +120,8 @@ const cadre =
           </button>
         </div>
 
-        <div class="border-b border-black/10 bg-white px-5 pb-4">
+        <div class="grid gap-3 border-b border-black/10 bg-white px-5 pb-4">
+          <AdminDepotPhotos compact @deposees="apresDepot" />
           <input
             ref="champRecherche"
             v-model="recherche"

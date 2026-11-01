@@ -159,15 +159,8 @@ const libelleBouton = computed(() => ctaChoisi()?.label)
   >
     <!-- 1. La date -->
     <div v-if="etape === 0">
-      <label for="a-date" class="block text-[22px] font-bold">Quel jour a lieu l'événement ?</label>
-      <p class="mt-2 text-[17px] text-slate-600">Touchez le champ pour ouvrir le calendrier.</p>
-      <input
-        id="a-date"
-        v-model="e.date"
-        type="date"
-        required
-        class="mt-4 rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-[20px] outline-none focus:border-clay-600"
-      >
+      <p class="text-[22px] font-bold">Quel jour a lieu l'événement ?</p>
+      <AdminDate id="a-date" v-model="e.date" class="mt-4" />
       <p v-if="e.date" class="mt-5 text-[18px]">
         Sur le site, on lira :
         <strong class="font-accent text-[22px] italic text-clay-800">{{ libelleDate(e.date) }}</strong>
